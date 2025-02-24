@@ -1,23 +1,27 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Wifi, Home as HomeIcon, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Home = () => {
   const products = [
     {
       icon: <HomeIcon className="h-8 w-8" />,
       title: 'Smart Home',
-      description: 'Solutions domotiques intelligentes pour votre maison'
+      description: 'Solutions domotiques intelligentes pour votre maison',
+      link: '/products'
     },
     {
       icon: <Wifi className="h-8 w-8" />,
       title: 'Réseau & Wi-Fi',
-      description: 'Connectivité haute performance pour entreprises et particuliers'
+      description: 'Connectivité haute performance pour entreprises et particuliers',
+      link: '/products'
     },
     {
       icon: <Shield className="h-8 w-8" />,
       title: 'Sécurité',
-      description: 'Systèmes de surveillance et protection avancés'
+      description: 'Systèmes de surveillance et protection avancés',
+      link: '/products'
     }
   ];
 
@@ -46,18 +50,22 @@ const Home = () => {
               Solutions IoT, réseau et IT innovantes pour votre entreprise
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="px-8 py-3 rounded-full bg-[var(--primary)] text-white neon-glow"
-              >
-                Découvrir nos produits
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="px-8 py-3 rounded-full border border-[var(--primary)] text-white"
-              >
-                Nos services
-              </motion.button>
+              <Link to="/products">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  className="px-8 py-3 rounded-full bg-[var(--primary)] text-white neon-glow w-full sm:w-auto"
+                >
+                  Découvrir nos produits
+                </motion.button>
+              </Link>
+              <Link to="/services">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  className="px-8 py-3 rounded-full border border-[var(--primary)] text-white w-full sm:w-auto"
+                >
+                  Nos services
+                </motion.button>
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -92,13 +100,14 @@ const Home = () => {
                 <div className="text-[var(--primary)] mb-4">{product.icon}</div>
                 <h3 className="text-xl font-bold mb-2">{product.title}</h3>
                 <p className="text-gray-300 mb-4">{product.description}</p>
-                <motion.a
-                  href="#"
-                  className="inline-flex items-center text-[var(--primary)]"
-                  whileHover={{ x: 5 }}
-                >
-                  En savoir plus <ChevronRight className="ml-1 h-4 w-4" />
-                </motion.a>
+                <Link to={product.link}>
+                  <motion.div
+                    className="inline-flex items-center text-[var(--primary)] cursor-pointer"
+                    whileHover={{ x: 5 }}
+                  >
+                    En savoir plus <ChevronRight className="ml-1 h-4 w-4" />
+                  </motion.div>
+                </Link>
               </motion.div>
             ))}
           </div>
