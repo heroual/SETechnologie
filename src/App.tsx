@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Products from './pages/Products';
 import Services from './pages/Services';
 import About from './pages/About';
+import Login from './pages/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import AdminServices from './pages/admin/Services';
@@ -68,6 +69,9 @@ function App() {
               </>
             }
           />
+          
+          {/* Auth Routes */}
+          <Route path="/login" element={<Login />} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>

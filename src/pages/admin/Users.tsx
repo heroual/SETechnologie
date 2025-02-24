@@ -8,7 +8,7 @@ import {
   Edit,
   Trash,
   Shield,
-  User
+  User as UserIcon
 } from 'lucide-react';
 import type { User } from '../../types';
 
@@ -51,7 +51,7 @@ const UserRow = ({ user }: { user: User }) => {
       <td className="py-4 px-6">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center">
-            <User className="h-5 w-5 text-[var(--primary)]" />
+            <UserIcon className="h-5 w-5 text-[var(--primary)]" />
           </div>
           <div>
             <p className="font-medium">{user.email}</p>
