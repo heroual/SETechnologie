@@ -11,7 +11,7 @@ import {
     serverTimestamp 
   } from 'firebase/firestore';
   import { createUserWithEmailAndPassword } from 'firebase/auth';
-  import { db, auth } from '../lib/firebase';
+  import { db, auth, isDemoMode } from '../lib/firebase';
   import { User } from '../types';
   
   // Mock users for demo mode
@@ -50,7 +50,7 @@ import {
   // Get all users
   export const getUsers = async (): Promise<User[]> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockUsers;
     }
   
@@ -62,7 +62,7 @@ import {
   // Get user by ID
   export const getUserById = async (id: string): Promise<User | null> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockUsers.find(user => user.id === id) || null;
     }
   
@@ -74,7 +74,7 @@ import {
   // Get user by email
   export const getUserByEmail = async (email: string): Promise<User | null> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockUsers.find(user => user.email === email) || null;
     }
   
@@ -89,7 +89,7 @@ import {
   // Create user
   export const createUser = async (email: string, password: string, role: 'admin' | 'manager' | 'employee'): Promise<string> => {
     // Check if we're using demo configuration
-    if (auth.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Create user operation not available in demo mode");
       return "demo-user-id";
     }
@@ -111,7 +111,7 @@ import {
   // Update user role
   export const updateUserRole = async (id: string, role: 'admin' | 'manager' | 'employee'): Promise<void> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Update user role operation not available in demo mode");
       return;
     }
@@ -123,7 +123,7 @@ import {
   // Delete user (Note: This doesn't delete the Auth user, only the Firestore document)
   export const deleteUserDocument = async (id: string): Promise<void> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Delete user operation not available in demo mode");
       return;
     }

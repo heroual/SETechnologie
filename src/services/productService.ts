@@ -12,7 +12,7 @@ import {
     Timestamp
   } from 'firebase/firestore';
   import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-  import { db, storage } from '../lib/firebase';
+  import { db, storage, isDemoMode } from '../lib/firebase';
   import { Product } from '../types';
   
   // Mock products for demo mode
@@ -66,7 +66,7 @@ import {
   // Get all products
   export const getProducts = async (): Promise<Product[]> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockProducts;
     }
   
@@ -78,7 +78,7 @@ import {
   // Get active products
   export const getActiveProducts = async (): Promise<Product[]> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockProducts.filter(product => product.status === 'active');
     }
   
@@ -91,7 +91,7 @@ import {
   // Get product by ID
   export const getProductById = async (id: string): Promise<Product | null> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockProducts.find(product => product.id === id) || null;
     }
   
@@ -103,7 +103,7 @@ import {
   // Create product
   export const createProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<string> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Create product operation not available in demo mode");
       return "demo-product-id";
     }
@@ -121,7 +121,7 @@ import {
   // Update product
   export const updateProduct = async (id: string, product: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>): Promise<void> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Update product operation not available in demo mode");
       return;
     }
@@ -136,7 +136,7 @@ import {
   // Delete product
   export const deleteProduct = async (id: string): Promise<void> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Delete product operation not available in demo mode");
       return;
     }
@@ -147,7 +147,7 @@ import {
   // Upload product image
   export const uploadProductImage = async (file: File, productId: string): Promise<string> => {
     // Check if we're using demo configuration
-    if (storage.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Upload image operation not available in demo mode");
       return "https://via.placeholder.com/300";
     }

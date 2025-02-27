@@ -6,7 +6,7 @@ import {
   User as FirebaseAuthUser
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
+import { auth, db, isDemoMode } from '../lib/firebase';
 import { FirebaseUser, AuthContextType } from '../types';
 import toast from 'react-hot-toast';
 
@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       // Check if we're using demo configuration
-      if (auth.app.options.apiKey === "demo-api-key") {
+      if (isDemoMode) {
         // Simulate login for demo mode
         const demoUser: FirebaseUser = {
           uid: "demo-user-id",
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       // Check if we're using demo configuration
-      if (auth.app.options.apiKey === "demo-api-key") {
+      if (isDemoMode) {
         // Simulate logout for demo mode
         setCurrentUser(null);
         setIsAdmin(false);
@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Check if we're using demo configuration
-    if (auth.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       // Skip auth state listener for demo mode
       setLoading(false);
       return () => {};

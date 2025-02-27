@@ -1,5 +1,5 @@
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, isDemoMode } from '../lib/firebase';
 import { DashboardStats } from '../types';
 import { getProducts, getActiveProducts } from './productService';
 import { getServices, getAvailableServices } from './serviceService';
@@ -9,7 +9,7 @@ import { getRecentActivityLogs } from './activityLogService';
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   try {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       // Return mock data for demo mode
       return {
         total_products: 12,

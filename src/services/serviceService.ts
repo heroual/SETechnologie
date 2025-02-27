@@ -11,7 +11,7 @@ import {
     serverTimestamp 
   } from 'firebase/firestore';
   import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-  import { db, storage } from '../lib/firebase';
+  import { db, storage, isDemoMode } from '../lib/firebase';
   import { Service } from '../types';
   
   // Mock services for demo mode
@@ -77,7 +77,7 @@ import {
   // Get all services
   export const getServices = async (): Promise<Service[]> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockServices;
     }
   
@@ -89,7 +89,7 @@ import {
   // Get available services
   export const getAvailableServices = async (): Promise<Service[]> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockServices.filter(service => service.status === 'available');
     }
   
@@ -102,7 +102,7 @@ import {
   // Get featured services
   export const getFeaturedServices = async (): Promise<Service[]> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockServices.filter(service => service.featured);
     }
   
@@ -115,7 +115,7 @@ import {
   // Get service by ID
   export const getServiceById = async (id: string): Promise<Service | null> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockServices.find(service => service.id === id) || null;
     }
   
@@ -127,7 +127,7 @@ import {
   // Create service
   export const createService = async (service: Omit<Service, 'id' | 'created_at' | 'updated_at'>): Promise<string> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Create service operation not available in demo mode");
       return "demo-service-id";
     }
@@ -145,7 +145,7 @@ import {
   // Update service
   export const updateService = async (id: string, service: Partial<Omit<Service, 'id' | 'created_at' | 'updated_at'>>): Promise<void> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Update service operation not available in demo mode");
       return;
     }
@@ -160,7 +160,7 @@ import {
   // Delete service
   export const deleteService = async (id: string): Promise<void> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Delete service operation not available in demo mode");
       return;
     }
@@ -171,7 +171,7 @@ import {
   // Upload service image
   export const uploadServiceImage = async (file: File, serviceId: string): Promise<string> => {
     // Check if we're using demo configuration
-    if (storage.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Upload image operation not available in demo mode");
       return "https://via.placeholder.com/300";
     }

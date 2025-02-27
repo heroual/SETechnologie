@@ -7,7 +7,7 @@ import {
     limit, 
     serverTimestamp 
   } from 'firebase/firestore';
-  import { db } from '../lib/firebase';
+  import { db, isDemoMode } from '../lib/firebase';
   
   interface ActivityLog {
     id: string;
@@ -56,7 +56,7 @@ import {
     details?: any
   ): Promise<string> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       console.log("Log activity operation not available in demo mode");
       return "demo-log-id";
     }
@@ -77,7 +77,7 @@ import {
   // Get recent activity logs
   export const getRecentActivityLogs = async (count: number = 10): Promise<ActivityLog[]> => {
     // Check if we're using demo configuration
-    if (db.app.options.apiKey === "demo-api-key") {
+    if (isDemoMode) {
       return mockActivityLogs.slice(0, count);
     }
   
