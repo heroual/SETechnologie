@@ -27,6 +27,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
+      // Check if we're using demo configuration
+      if (auth.app.options.apiKey === "demo-api-key") {
+        // Simulate login for demo mode
+        const demoUser: FirebaseUser = {
+          uid: "demo-user-id",
+          email: email,
+          displayName: "Demo User",
+          photoURL: null
+        };
+        setCurrentUser(demoUser);
+        setIsAdmin(true);
+        toast.success('Connexion réussie (mode démo)');
+        return;
+      }
+
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
       // Check user role in Firestore
@@ -53,6 +68,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      // Check if we're using demo configuration
+      if (auth.app.options.apiKey === "demo-api-key") {
+        // Simulate logout for demo mode
+        setCurrentUser(null);
+        setIsAdmin(false);
+        toast.success('Déconnexion réussie (mode démo)');
+        return;
+      }
+
       await signOut(auth);
       toast.success('Déconnexion réussie');
     } catch (error) {
@@ -63,6 +87,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // Check if we're using demo configuration
+    if (auth.app.options.apiKey === "demo-api-key") {
+      // Skip auth state listener for demo mode
+      setLoading(false);
+      return () => {};
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user: FirebaseAuthUser | null) => {
       if (user) {
         // Transform Firebase user to our app user format
