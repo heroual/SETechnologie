@@ -8,13 +8,25 @@ import {
   Edit,
   Trash,
   Eye,
-  Upload
+  Upload,
+  X
 } from 'lucide-react';
-import { getProducts } from '../../services/productService';
-import type { Product } from '../../types';
+import { getProducts, createProduct, updateProduct, deleteProduct } from '../../services/productService';
+import type { Product, ProductFormData } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import ProductForm from '../../components/admin/ProductForm';
+import DeleteConfirmation from '../../components/admin/DeleteConfirmation';
 
-const ProductRow = ({ product }: { product: Product }) => {
+const ProductRow = ({ 
+  product, 
+  onEdit, 
+  onDelete 
+}: { 
+  product: Product; 
+  onEdit: (product: Product) => void;
+  onDelete: (product: Product) => void;
+}) => {
   const [showActions, setShowActions] = useState(false);
 
   return (
@@ -58,15 +70,33 @@ const ProductRow = ({ product }: { product: Product }) => {
         </button>
         {showActions && (
           <div className="absolute right-6 mt-2 w-48 rounded-lg bg-[#1A1A1F] border border-white/10 shadow-lg py-1 z-10">
-            <button className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center">
+            <button 
+              className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center"
+              onClick={() => {
+                setShowActions(false);
+                window.open(`/products/${product.id}`, '_blank');
+              }}
+            >
               <Eye className="h-4 w-4 mr-2" />
               Voir
             </button>
-            <button className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center">
+            <button 
+              className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center"
+              onClick={() => {
+                setShowActions(false);
+                onEdit(product);
+              }}
+            >
               <Edit className="h-4 w-4 mr-2" />
               Modifier
             </button>
-            <button className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center text-red-500">
+            <button 
+              className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center text-red-500"
+              onClick={() => {
+                setShowActions(false);
+                onDelete(product);
+              }}
+            >
               <Trash className="h-4 w-4 mr-2" />
               Supprimer
             </button>
@@ -78,30 +108,121 @@ const ProductRow = ({ product }: { product: Product }) => {
 };
 
 const Products = () => {
+  const { currentUser } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  
+  const [showForm, setShowForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const productsData = await getProducts();
-        setProducts(productsData);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        toast.error('Erreur lors du chargement des produits');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
 
-  const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const productsData = await getProducts();
+      setProducts(productsData);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Erreur lors du chargement des produits');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddProduct = () => {
+    setEditingProduct(null);
+    setShowForm(true);
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setShowForm(true);
+  };
+
+  const handleDeleteProduct = (product: Product) => {
+    setProductToDelete(product);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleFormSubmit = async (formData: ProductFormData, files: File[]) => {
+    try {
+      setIsSubmitting(true);
+      
+      if (editingProduct) {
+        // Update existing product
+        await updateProduct(
+          editingProduct.id, 
+          formData, 
+          files,
+          currentUser?.uid || 'unknown'
+        );
+        toast.success('Produit mis à jour avec succès');
+      } else {
+        // Create new product
+        await createProduct(
+          formData, 
+          files,
+          currentUser?.uid || 'unknown'
+        );
+        toast.success('Produit ajouté avec succès');
+      }
+      
+      // Refresh products list
+      fetchProducts();
+      setShowForm(false);
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast.error('Erreur lors de l\'enregistrement du produit');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      await deleteProduct(
+        productToDelete.id,
+        currentUser?.uid || 'unknown'
+      );
+      
+      toast.success('Produit supprimé avec succès');
+      fetchProducts();
+      setShowDeleteConfirm(false);
+      setProductToDelete(null);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Erreur lors de la suppression du produit');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Get unique categories for filter
+  const categories = ['', ...new Set(products.map(product => product.category))];
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.category.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = categoryFilter ? product.category === categoryFilter : true;
+    const matchesStatus = statusFilter ? product.status === statusFilter : true;
+    
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
 
   return (
     <div className="space-y-6">
@@ -113,7 +234,10 @@ const Products = () => {
             <Upload className="h-5 w-5 mr-2" />
             Importer
           </button>
-          <button className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white neon-glow flex items-center">
+          <button 
+            className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white neon-glow flex items-center"
+            onClick={handleAddProduct}
+          >
             <Plus className="h-5 w-5 mr-2" />
             Nouveau Produit
           </button>
@@ -134,10 +258,39 @@ const Products = () => {
             />
           </div>
           <div className="flex items-center space-x-3">
-            <button className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors flex items-center">
-              <Filter className="h-5 w-5 mr-2" />
-              Filtres
-            </button>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
+            >
+              <option value="">Toutes les catégories</option>
+              {categories.filter(c => c).map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="active">Actif</option>
+              <option value="inactive">Inactif</option>
+            </select>
+            
+            {(searchTerm || categoryFilter || statusFilter) && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setCategoryFilter('');
+                  setStatusFilter('');
+                }}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -163,7 +316,12 @@ const Products = () => {
                 </thead>
                 <tbody>
                   {filteredProducts.map((product) => (
-                    <ProductRow key={product.id} product={product} />
+                    <ProductRow 
+                      key={product.id} 
+                      product={product} 
+                      onEdit={handleEditProduct}
+                      onDelete={handleDeleteProduct}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -175,6 +333,39 @@ const Products = () => {
           </div>
         )}
       </div>
+
+      {/* Product Form Modal */}
+      {showForm && (
+        <ProductForm
+          initialData={editingProduct ? {
+            id: editingProduct.id,
+            name: editingProduct.name,
+            category: editingProduct.category,
+            description: editingProduct.description,
+            price: editingProduct.price,
+            stock: editingProduct.stock,
+            status: editingProduct.status,
+            seo_keywords: editingProduct.seo_keywords
+          } : undefined}
+          onSubmit={handleFormSubmit}
+          onCancel={() => setShowForm(false)}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && productToDelete && (
+        <DeleteConfirmation
+          title="Supprimer le produit"
+          message={`Êtes-vous sûr de vouloir supprimer le produit "${productToDelete.name}" ? Cette action est irréversible.`}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setShowDeleteConfirm(false);
+            setProductToDelete(null);
+          }}
+          isDeleting={isDeleting}
+        />
+      )}
     </div>
   );
 };

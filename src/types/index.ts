@@ -61,3 +61,23 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   isAdmin: boolean;
 }
+
+export interface ProductFormData {
+  name: string;
+  category: string;
+  description: string;
+  price: number;
+  stock: number;
+  status: 'active' | 'inactive';
+  seo_keywords: string[];
+}
+
+export interface ServiceFormData {
+  name: string;
+  category: string;
+  description: string;
+  pricing_type: 'fixed' | 'quote';
+  price?: number;
+  status: 'available' | 'unavailable';
+  featured: boolean;
+}

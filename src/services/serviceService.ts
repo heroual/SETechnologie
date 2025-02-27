@@ -10,9 +10,10 @@ import {
     where, 
     serverTimestamp 
   } from 'firebase/firestore';
-  import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+  import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
   import { db, storage, isDemoMode } from '../lib/firebase';
-  import { Service } from '../types';
+  import { Service, ServiceFormData } from '../types';
+  import { logActivity } from './activityLogService';
   
   // Mock services for demo mode
   const mockServices: Service[] = [
@@ -125,58 +126,72 @@ import {
   };
   
   // Create service
-  export const createService = async (service: Omit<Service, 'id' | 'created_at' | 'updated_at'>): Promise<string> => {
+  export const createService = async (
+    serviceData: ServiceFormData, 
+    file?: File,
+    userId?: string
+  ): Promise<string> => {
     // Check if we're using demo configuration
     if (isDemoMode) {
-      console.log("Create service operation not available in demo mode");
-      return "demo-service-id";
+      const newId = `demo-service-${Date.now()}`;
+      mockServices.push({
+        id: newId,
+        ...serviceData,
+        image: file ? 'https://via.placeholder.com/300' : '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+      return newId;
     }
   
-    const serviceData = {
-      ...service,
+    // Create service document first
+    const serviceData2 = {
+      ...serviceData,
+      image: '',
       created_at: serverTimestamp(),
       updated_at: serverTimestamp()
     };
     
-    const docRef = await addDoc(collection(db, 'services'), serviceData);
-    return docRef.id;
+    const docRef = await addDoc(collection(db, 'services'), serviceData2);
+    const serviceId = docRef.id;
+    
+    // Upload image if any
+    if (file) {
+      const imageUrl = await uploadServiceImage(file, serviceId);
+      
+      // Update service with image URL
+      await updateDoc(docRef, { image: imageUrl });
+    }
+    
+    // Log activity
+    if (userId) {
+      await logActivity(
+        userId,
+        'create',
+        'service',
+        serviceId,
+        { name: serviceData.name }
+      );
+    }
+    
+    return serviceId;
   };
   
   // Update service
-  export const updateService = async (id: string, service: Partial<Omit<Service, 'id' | 'created_at' | 'updated_at'>>): Promise<void> => {
+  export const updateService = async (
+    id: string, 
+    serviceData: ServiceFormData, 
+    file?: File,
+    userId?: string
+  ): Promise<void> => {
     // Check if we're using demo configuration
     if (isDemoMode) {
-      console.log("Update service operation not available in demo mode");
-      return;
+      const index = mockServices.findIndex(s => s.id === id);
+      if (index !== -1) {
+        mockServices[index] = {
+          ...mockServices[index],
+          ...service
+        }
+      }
     }
-  
-    const serviceRef = doc(db, 'services', id);
-    await updateDoc(serviceRef, {
-      ...service,
-      updated_at: serverTimestamp()
-    });
-  };
-  
-  // Delete service
-  export const deleteService = async (id: string): Promise<void> => {
-    // Check if we're using demo configuration
-    if (isDemoMode) {
-      console.log("Delete service operation not available in demo mode");
-      return;
-    }
-  
-    await deleteDoc(doc(db, 'services', id));
-  };
-  
-  // Upload service image
-  export const uploadServiceImage = async (file: File, serviceId: string): Promise<string> => {
-    // Check if we're using demo configuration
-    if (isDemoMode) {
-      console.log("Upload image operation not available in demo mode");
-      return "https://via.placeholder.com/300";
-    }
-  
-    const storageRef = ref(storage, `services/${serviceId}/${file.name}`);
-    await uploadBytes(storageRef, file);
-    return getDownloadURL(storageRef);
-  };
+  }

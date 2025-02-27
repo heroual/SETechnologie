@@ -11,9 +11,10 @@ import {
     serverTimestamp,
     Timestamp
   } from 'firebase/firestore';
-  import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+  import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
   import { db, storage, isDemoMode } from '../lib/firebase';
-  import { Product } from '../types';
+  import { Product, ProductFormData } from '../types';
+  import { logActivity } from './activityLogService';
   
   // Mock products for demo mode
   const mockProducts: Product[] = [
@@ -101,58 +102,219 @@ import {
   };
   
   // Create product
-  export const createProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<string> => {
+  export const createProduct = async (
+    productData: ProductFormData, 
+    files: File[], 
+    userId: string
+  ): Promise<string> => {
     // Check if we're using demo configuration
     if (isDemoMode) {
-      console.log("Create product operation not available in demo mode");
-      return "demo-product-id";
+      const newId = `demo-product-${Date.now()}`;
+      mockProducts.push({
+        id: newId,
+        ...productData,
+        images: files.length > 0 ? ['https://via.placeholder.com/300'] : [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+      return newId;
     }
   
-    const productData = {
-      ...product,
+    // Create product document first
+    const productData2 = {
+      ...productData,
+      images: [],
       created_at: serverTimestamp(),
       updated_at: serverTimestamp()
     };
     
-    const docRef = await addDoc(collection(db, 'products'), productData);
-    return docRef.id;
+    const docRef = await addDoc(collection(db, 'products'), productData2);
+    const productId = docRef.id;
+    
+    // Upload images if any
+    if (files.length > 0) {
+      const imageUrls = await Promise.all(
+        files.map(file => uploadProductImage(file, productId))
+      );
+      
+      // Update product with image URLs
+      await updateDoc(docRef, { images: imageUrls });
+    }
+    
+    // Log activity
+    await logActivity(
+      userId,
+      'create',
+      'product',
+      productId,
+      { name: productData.name }
+    );
+    
+    return productId;
   };
   
   // Update product
-  export const updateProduct = async (id: string, product: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>): Promise<void> => {
+  export const updateProduct = async (
+    id: string, 
+    productData: ProductFormData, 
+    files: File[], 
+    userId: string
+  ): Promise<void> => {
     // Check if we're using demo configuration
     if (isDemoMode) {
-      console.log("Update product operation not available in demo mode");
+      const index = mockProducts.findIndex(p => p.id === id);
+      if (index !== -1) {
+        mockProducts[index] = {
+          ...mockProducts[index],
+          ...productData,
+          updated_at: new Date().toISOString()
+        };
+        
+        // Add new images if any
+        if (files.length > 0) {
+          mockProducts[index].images = [
+            ...mockProducts[index].images,
+            ...files.map(() => 'https://via.placeholder.com/300')
+          ];
+        }
+      }
       return;
     }
   
     const productRef = doc(db, 'products', id);
+    
+    // Get current product to check existing images
+    const productDoc = await getDoc(productRef);
+    if (!productDoc.exists()) {
+      throw new Error('Product not found');
+    }
+    
+    const currentProduct = productDoc.data();
+    
+    // Upload new images if any
+    let updatedImages = currentProduct.images || [];
+    if (files.length > 0) {
+      const newImageUrls = await Promise.all(
+        files.map(file => uploadProductImage(file, id))
+      );
+      updatedImages = [...updatedImages, ...newImageUrls];
+    }
+    
+    // Update product
     await updateDoc(productRef, {
-      ...product,
+      ...productData,
+      images: updatedImages,
       updated_at: serverTimestamp()
     });
+    
+    // Log activity
+    await logActivity(
+      userId,
+      'update',
+      'product',
+      id,
+      { name: productData.name }
+    );
   };
   
   // Delete product
-  export const deleteProduct = async (id: string): Promise<void> => {
+  export const deleteProduct = async (id: string, userId: string): Promise<void> => {
     // Check if we're using demo configuration
     if (isDemoMode) {
-      console.log("Delete product operation not available in demo mode");
+      const index = mockProducts.findIndex(p => p.id === id);
+      if (index !== -1) {
+        const deletedProduct = mockProducts[index];
+        mockProducts.splice(index, 1);
+        
+        // Log activity
+        console.log(`Product ${deletedProduct.name} deleted in demo mode`);
+      }
       return;
     }
   
-    await deleteDoc(doc(db, 'products', id));
+    // Get product to delete
+    const productRef = doc(db, 'products', id);
+    const productDoc = await getDoc(productRef);
+    
+    if (!productDoc.exists()) {
+      throw new Error('Product not found');
+    }
+    
+    const product = productDoc.data();
+    
+    // Delete images from storage
+    if (product.images && product.images.length > 0) {
+      await Promise.all(
+        product.images.map(async (imageUrl: string) => {
+          try {
+            // Extract the path from the URL
+            const storageRef = ref(storage, imageUrl);
+            await deleteObject(storageRef);
+          } catch (error) {
+            console.error('Error deleting image:', error);
+            // Continue with deletion even if image deletion fails
+          }
+        })
+      );
+    }
+    
+    // Delete product document
+    await deleteDoc(productRef);
+    
+    // Log activity
+    await logActivity(
+      userId,
+      'delete',
+      'product',
+      id,
+      { name: product.name }
+    );
   };
   
   // Upload product image
   export const uploadProductImage = async (file: File, productId: string): Promise<string> => {
     // Check if we're using demo configuration
     if (isDemoMode) {
-      console.log("Upload image operation not available in demo mode");
       return "https://via.placeholder.com/300";
     }
   
-    const storageRef = ref(storage, `products/${productId}/${file.name}`);
+    const fileName = `${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, `products/${productId}/${fileName}`);
     await uploadBytes(storageRef, file);
     return getDownloadURL(storageRef);
+  };
+  
+  // Delete product image
+  export const deleteProductImage = async (productId: string, imageUrl: string): Promise<void> => {
+    // Check if we're using demo configuration
+    if (isDemoMode) {
+      const product = mockProducts.find(p => p.id === productId);
+      if (product) {
+        product.images = product.images.filter(img => img !== imageUrl);
+      }
+      return;
+    }
+  
+    try {
+      // Delete from storage
+      const storageRef = ref(storage, imageUrl);
+      await deleteObject(storageRef);
+      
+      // Update product document
+      const productRef = doc(db, 'products', productId);
+      const productDoc = await getDoc(productRef);
+      
+      if (productDoc.exists()) {
+        const product = productDoc.data();
+        const updatedImages = (product.images || []).filter((img: string) => img !== imageUrl);
+        
+        await updateDoc(productRef, {
+          images: updatedImages,
+          updated_at: serverTimestamp()
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      throw error;
+    }
   };
