@@ -8,7 +8,8 @@ import {
   Activity,
   ArrowUp,
   ArrowDown,
-  Plus
+  Plus,
+  Eye
 } from 'lucide-react';
 import {
   AreaChart,
