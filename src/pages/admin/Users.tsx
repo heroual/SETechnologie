@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -10,28 +10,9 @@ import {
   Shield,
   User as UserIcon
 } from 'lucide-react';
+import { getUsers } from '../../services/userService';
 import type { User } from '../../types';
-
-const mockUsers: User[] = [
-  {
-    id: '1',
-    email: 'admin@setechnologie.ma',
-    role: 'admin',
-    created_at: '2024-02-24T10:00:00Z'
-  },
-  {
-    id: '2',
-    email: 'manager@setechnologie.ma',
-    role: 'manager',
-    created_at: '2024-02-24T11:00:00Z'
-  },
-  {
-    id: '3',
-    email: 'employee@setechnologie.ma',
-    role: 'employee',
-    created_at: '2024-02-24T12:00:00Z'
-  }
-];
+import toast from 'react-hot-toast';
 
 const roleColors = {
   admin: 'text-red-400 bg-red-500/20',
@@ -97,6 +78,31 @@ const UserRow = ({ user }: { user: User }) => {
 };
 
 const Users = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const usersData = await getUsers();
+        setUsers(usersData);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        toast.error('Erreur lors du chargement des utilisateurs');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = users.filter(user => 
+    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -116,6 +122,8 @@ const Users = () => {
             <input
               type="text"
               placeholder="Rechercher un utilisateur..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
             />
           </div>
@@ -130,22 +138,34 @@ const Users = () => {
 
       {/* Users Table */}
       <div className="glass-effect rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="text-left py-4 px-6 font-medium">Utilisateur</th>
-                <th className="text-left py-4 px-6 font-medium">Rôle</th>
-                <th className="text-left py-4 px-6 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mockUsers.map((user) => (
-                <UserRow key={user.id} user={user} />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            {filteredUsers.length > 0 ? (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/10 bg-white/5">
+                    <th className="text-left py-4 px-6 font-medium">Utilisateur</th>
+                    <th className="text-left py-4 px-6 font-medium">Rôle</th>
+                    <th className="text-left py-4 px-6 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <UserRow key={user.id} user={user} />
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                Aucun utilisateur trouvé
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

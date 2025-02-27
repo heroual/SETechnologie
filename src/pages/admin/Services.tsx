@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -10,35 +10,9 @@ import {
   Eye,
   Star
 } from 'lucide-react';
+import { getServices } from '../../services/serviceService';
 import type { Service } from '../../types';
-
-const mockServices: Service[] = [
-  {
-    id: '1',
-    name: 'Installation Wi-Fi Pro',
-    category: 'Réseau',
-    description: 'Installation et configuration de réseaux Wi-Fi professionnels',
-    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8',
-    pricing_type: 'quote',
-    status: 'available',
-    featured: true,
-    created_at: '2024-02-24T10:00:00Z',
-    updated_at: '2024-02-24T10:00:00Z'
-  },
-  {
-    id: '2',
-    name: 'Maintenance IT',
-    category: 'Support',
-    description: 'Service de maintenance informatique complet',
-    image: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780',
-    pricing_type: 'fixed',
-    price: 499,
-    status: 'available',
-    featured: false,
-    created_at: '2024-02-24T11:00:00Z',
-    updated_at: '2024-02-24T11:00:00Z'
-  }
-];
+import toast from 'react-hot-toast';
 
 const ServiceCard = ({ service }: { service: Service }) => {
   const [showActions, setShowActions] = useState(false);
@@ -51,7 +25,7 @@ const ServiceCard = ({ service }: { service: Service }) => {
     >
       <div className="relative h-48">
         <img
-          src={service.image}
+          src={service.image || 'https://via.placeholder.com/300x200'}
           alt={service.name}
           className="w-full h-full object-cover"
         />
@@ -126,6 +100,31 @@ const ServiceCard = ({ service }: { service: Service }) => {
 };
 
 const Services = () => {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const servicesData = await getServices();
+        setServices(servicesData);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+        toast.error('Erreur lors du chargement des services');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  const filteredServices = services.filter(service => 
+    service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    service.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -145,6 +144,8 @@ const Services = () => {
             <input
               type="text"
               placeholder="Rechercher un service..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
             />
           </div>
@@ -158,11 +159,23 @@ const Services = () => {
       </div>
 
       {/* Services Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockServices.map((service) => (
-          <ServiceCard key={service.id} service={service} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredServices.length > 0 ? (
+            filteredServices.map((service) => (
+              <ServiceCard key={service.id} service={service} />
+            ))
+          ) : (
+            <div className="col-span-3 text-center py-12 text-gray-400">
+              Aucun service trouvé
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

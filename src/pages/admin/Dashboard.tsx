@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   TrendingUp,
@@ -19,6 +19,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import type { DashboardStats } from '../../types';
+import { getDashboardStats } from '../../services/dashboardService';
 
 const data = [
   { name: 'Jan', products: 4, services: 2 },
@@ -58,44 +59,74 @@ const StatCard = ({
   </motion.div>
 );
 
-const RecentActivity = () => (
+const RecentActivity = ({ recentUpdates }: { recentUpdates: DashboardStats['recent_updates'] }) => (
   <div className="glass-effect rounded-xl p-6">
     <div className="flex items-center justify-between mb-6">
       <h3 className="text-lg font-semibold">Activité Récente</h3>
       <Activity className="h-5 w-5 text-[var(--primary)]" />
     </div>
     <div className="space-y-4">
-      {[
-        { action: 'Nouveau produit ajouté', item: 'Router Pro X1', time: 'Il y a 2h' },
-        { action: 'Service mis à jour', item: 'Installation Wi-Fi', time: 'Il y a 4h' },
-        { action: 'Stock mis à jour', item: 'Caméra 360°', time: 'Il y a 6h' },
-      ].map((activity, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className="flex items-center justify-between py-3 border-b border-white/10 last:border-0"
-        >
-          <div>
-            <p className="font-medium">{activity.action}</p>
-            <p className="text-sm text-gray-400">{activity.item}</p>
-          </div>
-          <span className="text-sm text-gray-400">{activity.time}</span>
-        </motion.div>
-      ))}
+      {recentUpdates.length > 0 ? (
+        recentUpdates.map((activity, index) => (
+          <motion.div
+            key={activity.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="flex items-center justify-between py-3 border-b border-white/10 last:border-0"
+          >
+            <div>
+              <p className="font-medium">
+                {activity.action === 'create' ? 'Nouveau' : activity.action === 'update' ? 'Mis à jour' : 'Supprimé'} {activity.type}
+              </p>
+              <p className="text-sm text-gray-400">{activity.name}</p>
+            </div>
+            <span className="text-sm text-gray-400">
+              {new Date(activity.timestamp).toLocaleString()}
+            </span>
+          </motion.div>
+        ))
+      ) : (
+        <div className="text-center py-4 text-gray-400">
+          Aucune activité récente
+        </div>
+      )}
     </div>
   </div>
 );
 
 const Dashboard = () => {
-  const stats: DashboardStats = {
-    total_products: 24,
-    active_products: 18,
-    total_services: 12,
-    available_services: 10,
+  const [stats, setStats] = useState<DashboardStats>({
+    total_products: 0,
+    active_products: 0,
+    total_services: 0,
+    available_services: 0,
     recent_updates: []
-  };
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const dashboardStats = await getDashboardStats();
+        setStats(dashboardStats);
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -172,7 +203,7 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
         </div>
-        <RecentActivity />
+        <RecentActivity recentUpdates={stats.recent_updates} />
       </div>
     </div>
   );

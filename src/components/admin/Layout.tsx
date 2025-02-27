@@ -10,9 +10,11 @@ import {
   Bell,
   Cpu
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [notifications] = React.useState(2); // Example notification count
 
   const menuItems = [
@@ -22,9 +24,13 @@ const AdminLayout = () => {
     { icon: <Users size={20} />, label: 'Utilisateurs', path: '/admin/users' },
   ];
 
-  const handleLogout = () => {
-    // Handle logout logic here
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (

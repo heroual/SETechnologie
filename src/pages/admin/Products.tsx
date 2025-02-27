@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -10,36 +10,9 @@ import {
   Eye,
   Upload
 } from 'lucide-react';
+import { getProducts } from '../../services/productService';
 import type { Product } from '../../types';
-
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Router Pro X1',
-    category: 'Réseau',
-    description: 'Routeur professionnel haute performance',
-    images: ['https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0'],
-    price: 1299,
-    stock: 45,
-    status: 'active',
-    seo_keywords: ['router', 'wifi', 'réseau'],
-    created_at: '2024-02-24T10:00:00Z',
-    updated_at: '2024-02-24T10:00:00Z'
-  },
-  {
-    id: '2',
-    name: 'Caméra 360° Pro',
-    category: 'Sécurité',
-    description: 'Caméra de surveillance 360°',
-    images: ['https://images.unsplash.com/photo-1557324232-b8917d3c3dcb'],
-    price: 899,
-    stock: 30,
-    status: 'active',
-    seo_keywords: ['caméra', 'surveillance', 'sécurité'],
-    created_at: '2024-02-24T11:00:00Z',
-    updated_at: '2024-02-24T11:00:00Z'
-  }
-];
+import toast from 'react-hot-toast';
 
 const ProductRow = ({ product }: { product: Product }) => {
   const [showActions, setShowActions] = useState(false);
@@ -53,7 +26,7 @@ const ProductRow = ({ product }: { product: Product }) => {
       <td className="py-4 px-6">
         <div className="flex items-center space-x-3">
           <img
-            src={product.images[0]}
+            src={product.images[0] || 'https://via.placeholder.com/40'}
             alt={product.name}
             className="w-10 h-10 rounded-lg object-cover"
           />
@@ -105,6 +78,31 @@ const ProductRow = ({ product }: { product: Product }) => {
 };
 
 const Products = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const productsData = await getProducts();
+        setProducts(productsData);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast.error('Erreur lors du chargement des produits');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -130,6 +128,8 @@ const Products = () => {
             <input
               type="text"
               placeholder="Rechercher un produit..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
             />
           </div>
@@ -144,24 +144,36 @@ const Products = () => {
 
       {/* Products Table */}
       <div className="glass-effect rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="text-left py-4 px-6 font-medium">Produit</th>
-                <th className="text-left py-4 px-6 font-medium">Prix</th>
-                <th className="text-left py-4 px-6 font-medium">Stock</th>
-                <th className="text-left py-4 px-6 font-medium">Statut</th>
-                <th className="text-left py-4 px-6 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mockProducts.map((product) => (
-                <ProductRow key={product.id} product={product} />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            {filteredProducts.length > 0 ? (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/10 bg-white/5">
+                    <th className="text-left py-4 px-6 font-medium">Produit</th>
+                    <th className="text-left py-4 px-6 font-medium">Prix</th>
+                    <th className="text-left py-4 px-6 font-medium">Stock</th>
+                    <th className="text-left py-4 px-6 font-medium">Statut</th>
+                    <th className="text-left py-4 px-6 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product) => (
+                    <ProductRow key={product.id} product={product} />
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                Aucun produit trouvé
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

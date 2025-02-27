@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Cpu, Mail, Lock, AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,20 +17,11 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Connexion réussie');
+      await login(email, password);
       navigate('/admin');
     } catch (error) {
-      toast.error('Erreur de connexion. Vérifiez vos identifiants.');
       console.error('Login error:', error);
+      // Toast notification is handled in the AuthContext
     } finally {
       setLoading(false);
     }
