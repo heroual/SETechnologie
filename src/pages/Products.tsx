@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
   Router, 
   Shield, 
@@ -189,12 +190,14 @@ const ProductCard = ({ product }: { product: Product }) => {
             <ShoppingCart className="w-4 h-4 mr-2" />
             Ajouter au panier
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            className="px-4 py-2 rounded-full border border-[var(--primary)] text-white"
-          >
-            Détails
-          </motion.button>
+          <Link to={`/products/${product.id}`}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              className="px-4 py-2 rounded-full border border-[var(--primary)] text-white"
+            >
+              Détails
+            </motion.button>
+          </Link>
         </div>
       </div>
     </motion.div>
