@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Wifi, Home as HomeIcon, ChevronRight } from 'lucide-react';
+import { Shield, Wifi, Home as HomeIcon, ChevronRight, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
@@ -58,12 +58,13 @@ const Home = () => {
                   Découvrir nos produits
                 </motion.button>
               </Link>
-              <Link to="/services">
+              <Link to="/quote-request">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
-                  className="px-8 py-3 rounded-full border border-[var(--primary)] text-white w-full sm:w-auto"
+                  className="px-8 py-3 rounded-full border border-[var(--primary)] text-white w-full sm:w-auto flex items-center justify-center"
                 >
-                  Nos services
+                  <FileText className="h-5 w-5 mr-2" />
+                  Demander un devis
                 </motion.button>
               </Link>
             </div>

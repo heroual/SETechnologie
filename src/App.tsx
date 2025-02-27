@@ -9,6 +9,7 @@ import ProductDetail from './pages/ProductDetail';
 import Services from './pages/Services';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import QuoteRequest from './pages/QuoteRequest';
 import Login from './pages/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
@@ -90,6 +91,18 @@ function App() {
                 <Navbar />
                 <main className="flex-grow">
                   <Contact />
+                </main>
+                <Footer />
+              </>
+            }
+          />
+          <Route
+            path="/quote-request"
+            element={
+              <>
+                <Navbar />
+                <main className="flex-grow">
+                  <QuoteRequest />
                 </main>
                 <Footer />
               </>

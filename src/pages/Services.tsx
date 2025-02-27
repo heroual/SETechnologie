@@ -11,6 +11,7 @@ import {
   PhoneCall,
   FileText
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Service {
   icon: JSX.Element;
@@ -289,20 +290,24 @@ const Services = () => {
             Contactez-nous dès aujourd'hui pour une consultation gratuite et découvrez comment nous pouvons vous aider.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="px-6 py-3 rounded-full bg-[var(--primary)] text-white neon-glow flex items-center justify-center"
-            >
-              <FileText className="w-5 h-5 mr-2" />
-              Demander un devis gratuit
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="px-6 py-3 rounded-full border border-[var(--primary)] text-white flex items-center justify-center"
-            >
-              <PhoneCall className="w-5 h-5 mr-2" />
-              Nous contacter
-            </motion.button>
+            <Link to="/quote-request">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                className="px-6 py-3 rounded-full bg-[var(--primary)] text-white neon-glow flex items-center justify-center"
+              >
+                <FileText className="w-5 h-5 mr-2" />
+                Demander un devis gratuit
+              </motion.button>
+            </Link>
+            <Link to="/contact">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                className="px-6 py-3 rounded-full border border-[var(--primary)] text-white flex items-center justify-center"
+              >
+                <PhoneCall className="w-5 h-5 mr-2" />
+                Nous contacter
+              </motion.button>
+            </Link>
           </div>
         </motion.div>
       </div>

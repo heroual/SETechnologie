@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X, Cpu } from 'lucide-react';
+import { Menu, X, Cpu, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
@@ -42,12 +42,15 @@ const Navbar = () => {
                   </Link>
                 </motion.div>
               ))}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow"
-              >
-                Demander un devis
-              </motion.button>
+              <Link to="/quote-request">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  className="px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow flex items-center"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Demander un devis
+                </motion.button>
+              </Link>
             </div>
           </div>
 
@@ -80,9 +83,12 @@ const Navbar = () => {
                 {item.title}
               </Link>
             ))}
-            <button className="w-full mt-4 px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow">
-              Demander un devis
-            </button>
+            <Link to="/quote-request" onClick={() => setIsOpen(false)}>
+              <button className="w-full mt-4 px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow flex items-center justify-center">
+                <FileText className="h-4 w-4 mr-2" />
+                Demander un devis
+              </button>
+            </Link>
           </div>
         </motion.div>
       )}
