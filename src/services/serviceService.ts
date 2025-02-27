@@ -190,8 +190,123 @@ import {
       if (index !== -1) {
         mockServices[index] = {
           ...mockServices[index],
-          ...service
+          ...serviceData,
+          updated_at: new Date().toISOString()
+        };
+        
+        // Update image if any
+        if (file) {
+          mockServices[index].image = 'https://via.placeholder.com/300';
         }
       }
+      return;
     }
-  }
+  
+    const serviceRef = doc(db, 'services', id);
+    
+    // Get current service to check existing image
+    const serviceDoc = await getDoc(serviceRef);
+    if (!serviceDoc.exists()) {
+      throw new Error('Service not found');
+    }
+    
+    // Upload new image if any
+    let imageUrl = serviceDoc.data().image || '';
+    if (file) {
+      // Delete old image if exists
+      if (imageUrl) {
+        try {
+          const storageRef = ref(storage, imageUrl);
+          await deleteObject(storageRef);
+        } catch (error) {
+          console.error('Error deleting old image:', error);
+          // Continue with update even if image deletion fails
+        }
+      }
+      
+      // Upload new image
+      imageUrl = await uploadServiceImage(file, id);
+    }
+    
+    // Update service
+    await updateDoc(serviceRef, {
+      ...serviceData,
+      image: imageUrl,
+      updated_at: serverTimestamp()
+    });
+    
+    // Log activity
+    if (userId) {
+      await logActivity(
+        userId,
+        'update',
+        'service',
+        id,
+        { name: serviceData.name }
+      );
+    }
+  };
+  
+  // Delete service
+  export const deleteService = async (id: string, userId?: string): Promise<void> => {
+    // Check if we're using demo configuration
+    if (isDemoMode) {
+      const index = mockServices.findIndex(s => s.id === id);
+      if (index !== -1) {
+        const deletedService = mockServices[index];
+        mockServices.splice(index, 1);
+        
+        // Log activity
+        console.log(`Service ${deletedService.name} deleted in demo mode`);
+      }
+      return;
+    }
+  
+    // Get service to delete
+    const serviceRef = doc(db, 'services', id);
+    const serviceDoc = await getDoc(serviceRef);
+    
+    if (!serviceDoc.exists()) {
+      throw new Error('Service not found');
+    }
+    
+    const service = serviceDoc.data();
+    
+    // Delete image from storage if exists
+    if (service.image) {
+      try {
+        const storageRef = ref(storage, service.image);
+        await deleteObject(storageRef);
+      } catch (error) {
+        console.error('Error deleting image:', error);
+        // Continue with deletion even if image deletion fails
+      }
+    }
+    
+    // Delete service document
+    await deleteDoc(serviceRef);
+    
+    // Log activity
+    if (userId) {
+      await logActivity(
+        userId,
+        'delete',
+        'service',
+        id,
+        { name: service.name }
+      );
+    }
+  };
+  
+  // Upload service image
+  export const uploadServiceImage = async (file: File, serviceId: string): Promise<string> => {
+    // Check if we're using demo configuration
+    if (isDemoMode) {
+      return "https://via.placeholder.com/300";
+    }
+  
+    const fileName = `${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, `services/${serviceId}/${fileName}`);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  };
