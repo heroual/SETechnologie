@@ -9,105 +9,38 @@ import {
   Settings,
   Globe,
   ShoppingBag,
-  AlertTriangle
+  AlertTriangle,
+  Plus,
+  Trash,
+  Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getShopSettings, saveShopSettings } from '../../services/shopSettingsService';
+import { ShopSettings } from '../../types';
 
-interface ShopSettings {
-  general: {
-    shopName: string;
-    shopEmail: string;
-    shopPhone: string;
-    shopAddress: string;
-    shopCurrency: string;
-    shopLanguage: string;
-  };
-  shipping: {
-    enableShipping: boolean;
-    shippingMethods: Array<{
-      id: string;
-      name: string;
-      price: number;
-      estimatedDelivery: string;
-      active: boolean;
-    }>;
-    freeShippingThreshold: number;
-  };
-  payment: {
-    enablePayments: boolean;
-    paymentMethods: Array<{
-      id: string;
-      name: string;
-      description: string;
-      active: boolean;
-    }>;
-    taxRate: number;
-  };
-  emails: {
-    sendOrderConfirmation: boolean;
-    sendShippingConfirmation: boolean;
-    sendOrderCancellation: boolean;
-    ccAdminOnOrders: boolean;
-  };
-}
-
-const ShopSettings = () => {
+const ShopSettingsPage = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
   const [settings, setSettings] = useState<ShopSettings>({
     general: {
-      shopName: 'SE Technologie',
-      shopEmail: 'contact@setechnologie.ma',
-      shopPhone: '0808551720',
-      shopAddress: 'Agadir, Maroc',
+      shopName: '',
+      shopEmail: '',
+      shopPhone: '',
+      shopAddress: '',
       shopCurrency: 'MAD',
       shopLanguage: 'fr',
     },
     shipping: {
       enableShipping: true,
-      shippingMethods: [
-        {
-          id: 'standard',
-          name: 'Livraison standard',
-          price: 50,
-          estimatedDelivery: '3-5 jours ouvrables',
-          active: true
-        },
-        {
-          id: 'express',
-          name: 'Livraison express',
-          price: 100,
-          estimatedDelivery: '1-2 jours ouvrables',
-          active: true
-        }
-      ],
-      freeShippingThreshold: 1000
+      shippingMethods: [],
+      freeShippingThreshold: 0
     },
     payment: {
       enablePayments: true,
-      paymentMethods: [
-        {
-          id: 'card',
-          name: 'Carte bancaire',
-          description: 'Paiement sécurisé par carte bancaire',
-          active: true
-        },
-        {
-          id: 'transfer',
-          name: 'Virement bancaire',
-          description: 'Les détails du virement vous seront envoyés par email',
-          active: true
-        },
-        {
-          id: 'cash',
-          name: 'Paiement à la livraison',
-          description: 'Payez en espèces à la réception de votre commande',
-          active: true
-        }
-      ],
-      taxRate: 20
+      paymentMethods: [],
+      taxRate: 0
     },
     emails: {
       sendOrderConfirmation: true,
@@ -117,13 +50,34 @@ const ShopSettings = () => {
     }
   });
 
-  // Simulate loading data
+  // New shipping method state
+  const [newShippingMethod, setNewShippingMethod] = useState({
+    name: '',
+    price: 0,
+    estimatedDelivery: ''
+  });
+
+  // New payment method state
+  const [newPaymentMethod, setNewPaymentMethod] = useState({
+    name: '',
+    description: ''
+  });
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
+    const fetchSettings = async () => {
+      setLoading(true);
+      try {
+        const shopSettings = await getShopSettings();
+        setSettings(shopSettings);
+      } catch (error) {
+        console.error('Error fetching shop settings:', error);
+        toast.error('Erreur lors du chargement des paramètres');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSettings();
   }, []);
 
   const handleGeneralChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -212,13 +166,98 @@ const ShopSettings = () => {
     });
   };
 
+  const handleAddShippingMethod = () => {
+    if (!newShippingMethod.name || !newShippingMethod.estimatedDelivery) {
+      toast.error('Veuillez remplir tous les champs');
+      return;
+    }
+
+    const newMethod = {
+      id: `shipping-${Date.now()}`,
+      name: newShippingMethod.name,
+      price: newShippingMethod.price,
+      estimatedDelivery: newShippingMethod.estimatedDelivery,
+      active: true
+    };
+
+    setSettings({
+      ...settings,
+      shipping: {
+        ...settings.shipping,
+        shippingMethods: [...settings.shipping.shippingMethods, newMethod]
+      }
+    });
+
+    setNewShippingMethod({
+      name: '',
+      price: 0,
+      estimatedDelivery: ''
+    });
+
+    toast.success('Méthode de livraison ajoutée');
+  };
+
+  const handleRemoveShippingMethod = (id: string) => {
+    setSettings({
+      ...settings,
+      shipping: {
+        ...settings.shipping,
+        shippingMethods: settings.shipping.shippingMethods.filter(method => method.id !== id)
+      }
+    });
+    toast.success('Méthode de livraison supprimée');
+  };
+
+  const handleAddPaymentMethod = () => {
+    if (!newPaymentMethod.name || !newPaymentMethod.description) {
+      toast.error('Veuillez remplir tous les champs');
+      return;
+    }
+
+    const newMethod = {
+      id: `payment-${Date.now()}`,
+      name: newPaymentMethod.name,
+      description: newPaymentMethod.description,
+      active: true
+    };
+
+    setSettings({
+      ...settings,
+      payment: {
+        ...settings.payment,
+        paymentMethods: [...settings.payment.paymentMethods, newMethod]
+      }
+    });
+
+    setNewPaymentMethod({
+      name: '',
+      description: ''
+    });
+
+    toast.success('Méthode de paiement ajoutée');
+  };
+
+  const handleRemovePaymentMethod = (id: string) => {
+    setSettings({
+      ...settings,
+      payment: {
+        ...settings.payment,
+        paymentMethods: settings.payment.paymentMethods.filter(method => method.id !== id)
+      }
+    });
+    toast.success('Méthode de paiement supprimée');
+  };
+
   const handleSaveSettings = async () => {
     setSaving(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success('Paramètres de la boutique sauvegardés');
+      const success = await saveShopSettings(settings);
+      if (success) {
+        toast.success('Paramètres de la boutique sauvegardés');
+      } else {
+        toast.error('Erreur lors de la sauvegarde des paramètres');
+      }
     } catch (error) {
       toast.error('Erreur lors de la sauvegarde des paramètres');
       console.error(error);
@@ -431,7 +470,7 @@ const ShopSettings = () => {
           <div className={settings.shipping.enableShipping ? '' : 'opacity-50 pointer-events-none'}>
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Seuil de livraison gratuite (MAD)
+                Seuil de livraison gratuite ({settings.general.shopCurrency})
               </label>
               <input
                 type="number"
@@ -448,7 +487,7 @@ const ShopSettings = () => {
             
             <h4 className="font-medium mb-4">Méthodes de livraison</h4>
             
-            <div className="space-y-4">
+            <div className="space-y-4 mb-6">
               {settings.shipping.shippingMethods.map(method => (
                 <div key={method.id} className="glass-effect rounded-lg p-4">
                   <div className="flex items-center justify-between mb-4">
@@ -476,6 +515,12 @@ const ShopSettings = () => {
                         step="1"
                         className="w-20 bg-transparent border-b border-white/10 focus:outline-none focus:border-[var(--primary)] text-right"
                       />
+                      <button
+                        onClick={() => handleRemoveShippingMethod(method.id)}
+                        className="ml-4 p-1 hover:bg-white/10 rounded-lg transition-colors text-red-400"
+                      >
+                        <Trash className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                   
@@ -495,10 +540,55 @@ const ShopSettings = () => {
               ))}
             </div>
             
-            <button className="mt-4 px-4 py-2 rounded-lg border border-dashed border-white/20 hover:border-white/40 transition-colors flex items-center justify-center w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter une méthode de livraison
-            </button>
+            <div className="glass-effect rounded-lg p-4">
+              <h4 className="font-medium mb-4">Ajouter une méthode de livraison</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Nom de la méthode
+                  </label>
+                  <input
+                    type="text"
+                    value={newShippingMethod.name}
+                    onChange={(e) => setNewShippingMethod({...newShippingMethod, name: e.target.value})}
+                    className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
+                    placeholder="ex: Livraison standard"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Prix ({settings.general.shopCurrency})
+                  </label>
+                  <input
+                    type="number"
+                    value={newShippingMethod.price}
+                    onChange={(e) => setNewShippingMethod({...newShippingMethod, price: parseFloat(e.target.value) || 0})}
+                    min="0"
+                    step="1"
+                    className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
+                  />
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Délai de livraison estimé
+                </label>
+                <input
+                  type="text"
+                  value={newShippingMethod.estimatedDelivery}
+                  onChange={(e) => setNewShippingMethod({...newShippingMethod, estimatedDelivery: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
+                  placeholder="ex: 3-5 jours ouvrables"
+                />
+              </div>
+              <button
+                onClick={handleAddShippingMethod}
+                className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors flex items-center"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter cette méthode
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -540,7 +630,7 @@ const ShopSettings = () => {
             
             <h4 className="font-medium mb-4">Méthodes de paiement</h4>
             
-            <div className="space-y-4">
+            <div className="space-y-4 mb-6">
               {settings.payment.paymentMethods.map(method => (
                 <div key={method.id} className="glass-effect rounded-lg p-4">
                   <div className="flex items-center justify-between mb-4">
@@ -558,6 +648,12 @@ const ShopSettings = () => {
                         className="font-medium bg-transparent border-b border-white/10 focus:outline-none focus:border-[var(--primary)]"
                       />
                     </div>
+                    <button
+                      onClick={() => handleRemovePaymentMethod(method.id)}
+                      className="p-1 hover:bg-white/10 rounded-lg transition-colors text-red-400"
+                    >
+                      <Trash className="h-5 w-5" />
+                    </button>
                   </div>
                   
                   <div>
@@ -576,10 +672,40 @@ const ShopSettings = () => {
               ))}
             </div>
             
-            <button className="mt-4 px-4 py-2 rounded-lg border border-dashed border-white/20 hover:border-white/40 transition-colors flex items-center justify-center w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter une méthode de paiement
-            </button>
+            <div className="glass-effect rounded-lg p-4">
+              <h4 className="font-medium mb-4">Ajouter une méthode de paiement</h4>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Nom de la méthode
+                </label>
+                <input
+                  type="text"
+                  value={newPaymentMethod.name}
+                  onChange={(e) => setNewPaymentMethod({...newPaymentMethod, name: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
+                  placeholder="ex: Carte bancaire"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Description
+                </label>
+                <input
+                  type="text"
+                  value={newPaymentMethod.description}
+                  onChange={(e) => setNewPaymentMethod({...newPaymentMethod, description: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-[var(--primary)]"
+                  placeholder="ex: Paiement sécurisé par carte bancaire"
+                />
+              </div>
+              <button
+                onClick={handleAddPaymentMethod}
+                className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors flex items-center"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter cette méthode
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -684,4 +810,4 @@ const ShopSettings = () => {
   );
 };
 
-export default ShopSettings;
+export default ShopSettingsPage;

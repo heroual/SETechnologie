@@ -228,3 +228,82 @@ export interface ActionHistory {
   performedBy: string;
   timestamp: string;
 }
+
+// Shop Settings Types
+export interface ShopSettings {
+  general: {
+    shopName: string;
+    shopEmail: string;
+    shopPhone: string;
+    shopAddress: string;
+    shopCurrency: string;
+    shopLanguage: string;
+  };
+  shipping: {
+    enableShipping: boolean;
+    shippingMethods: Array<{
+      id: string;
+      name: string;
+      price: number;
+      estimatedDelivery: string;
+      active: boolean;
+    }>;
+    freeShippingThreshold: number;
+  };
+  payment: {
+    enablePayments: boolean;
+    paymentMethods: Array<{
+      id: string;
+      name: string;
+      description: string;
+      active: boolean;
+    }>;
+    taxRate: number;
+  };
+  emails: {
+    sendOrderConfirmation: boolean;
+    sendShippingConfirmation: boolean;
+    sendOrderCancellation: boolean;
+    ccAdminOnOrders: boolean;
+  };
+}
+
+// Email Settings Types
+export interface EmailSettings {
+  sender: string;
+  replyTo: string;
+  bcc: string[];
+  signature: string;
+  logo: boolean;
+  footerText: string;
+  templates: Array<{
+    id: string;
+    name: string;
+    subject: string;
+    body: string;
+    variables: string[];
+    lastUpdated: string;
+  }>;
+}
+
+// General Settings Types
+export interface GeneralSettings {
+  siteName: string;
+  siteDescription: string;
+  contactEmail: string;
+  contactPhone: string;
+  address: string;
+  socialLinks: {
+    facebook: string;
+    twitter: string;
+    instagram: string;
+    linkedin: string;
+  };
+  logo: string;
+  favicon: string;
+  metaTags: {
+    keywords: string;
+    author: string;
+    ogImage: string;
+  };
+}
