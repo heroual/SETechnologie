@@ -47,6 +47,31 @@ export interface DashboardStats {
   }>;
 }
 
+export interface AdvancedAnalytics {
+  // Sales Analytics
+  total_revenue: number;
+  monthly_revenue: number[];
+  revenue_growth: number;
+  average_order_value: number;
+  
+  // User Engagement
+  total_users: number;
+  active_users: number;
+  user_growth: number;
+  page_views: number;
+  
+  // Performance Metrics
+  conversion_rate: number;
+  top_products: Array<{
+    id: string;
+    name: string;
+    sales: number;
+    revenue: number;
+  }>;
+  inventory_health: number;
+  service_utilization: number;
+}
+
 export interface FirebaseUser {
   uid: string;
   email: string | null;

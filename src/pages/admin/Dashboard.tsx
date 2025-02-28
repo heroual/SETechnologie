@@ -9,7 +9,14 @@ import {
   ArrowUp,
   ArrowDown,
   Plus,
-  Eye
+  Eye,
+  DollarSign,
+  BarChart2,
+  ShoppingBag,
+  Percent,
+  Award,
+  AlertTriangle,
+  Zap
 } from 'lucide-react';
 import {
   AreaChart,
@@ -24,10 +31,12 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend
+  Legend,
+  LineChart,
+  Line
 } from 'recharts';
-import type { DashboardStats } from '../../types';
-import { getDashboardStats } from '../../services/dashboardService';
+import type { DashboardStats, AdvancedAnalytics } from '../../types';
+import { getDashboardStats, getAdvancedAnalytics } from '../../services/dashboardService';
 import { getProducts } from '../../services/productService';
 import { getServices } from '../../services/serviceService';
 import { Link } from 'react-router-dom';
@@ -42,6 +51,7 @@ const data = [
 ];
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const MONTHS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 
 const StatCard = ({ 
   title, 
@@ -51,7 +61,7 @@ const StatCard = ({
   linkTo
 }: { 
   title: string; 
-  value: number; 
+  value: number | string; 
   icon: React.ElementType; 
   trend: { value: number; isPositive: boolean };
   linkTo?: string;
@@ -118,6 +128,69 @@ const RecentActivity = ({ recentUpdates }: { recentUpdates: DashboardStats['rece
   </div>
 );
 
+const TopProductsTable = ({ topProducts }: { topProducts: AdvancedAnalytics['top_products'] }) => (
+  <div className="glass-effect rounded-xl p-6">
+    <div className="flex items-center justify-between mb-6">
+      <h3 className="text-lg font-semibold">Produits les plus vendus</h3>
+      <Award className="h-5 w-5 text-[var(--primary)]" />
+    </div>
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-white/10">
+            <th className="text-left py-2 font-medium text-gray-400">Produit</th>
+            <th className="text-right py-2 font-medium text-gray-400">Ventes</th>
+            <th className="text-right py-2 font-medium text-gray-400">Revenus</th>
+          </tr>
+        </thead>
+        <tbody>
+          {topProducts.map((product, index) => (
+            <tr key={product.id} className="border-b border-white/10 last:border-0">
+              <td className="py-3">
+                <div className="flex items-center">
+                  <div className="w-6 h-6 rounded-full bg-[var(--primary)]/20 flex items-center justify-center mr-2">
+                    {index + 1}
+                  </div>
+                  <span>{product.name}</span>
+                </div>
+              </td>
+              <td className="py-3 text-right">{product.sales}</td>
+              <td className="py-3 text-right">{product.revenue.toLocaleString()} MAD</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
+const PerformanceIndicator = ({ 
+  title, 
+  value, 
+  icon: Icon, 
+  color,
+  suffix
+}: { 
+  title: string; 
+  value: number; 
+  icon: React.ElementType;
+  color: string;
+  suffix?: string;
+}) => (
+  <div className="glass-effect rounded-xl p-6">
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-lg font-medium">{title}</h3>
+      <div className={`p-2 rounded-lg bg-${color}-500/20`}>
+        <Icon className={`h-5 w-5 text-${color}-500`} />
+      </div>
+    </div>
+    <div className="flex items-end">
+      <span className="text-2xl font-bold">{value}</span>
+      {suffix && <span className="text-gray-400 ml-1">{suffix}</span>}
+    </div>
+  </div>
+);
+
 const Dashboard = () => {
   const [stats, setStats] = useState<DashboardStats>({
     total_products: 0,
@@ -126,15 +199,23 @@ const Dashboard = () => {
     available_services: 0,
     recent_updates: []
   });
+  const [analytics, setAnalytics] = useState<AdvancedAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [statusData, setStatusData] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
+        setLoading(true);
+        
+        // Fetch basic dashboard stats
         const dashboardStats = await getDashboardStats();
         setStats(dashboardStats);
+        
+        // Fetch advanced analytics
+        const advancedAnalytics = await getAdvancedAnalytics();
+        setAnalytics(advancedAnalytics);
         
         // Fetch additional data for charts
         const products = await getProducts();
@@ -165,14 +246,21 @@ const Dashboard = () => {
           { name: 'Services indisponibles', value: unavailableServices }
         ]);
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
+        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStats();
+    fetchData();
   }, []);
+
+  // Prepare revenue data for chart
+  const revenueData = analytics ? 
+    analytics.monthly_revenue.map((value, index) => ({
+      name: MONTHS[index],
+      revenue: value
+    })) : [];
 
   if (loading) {
     return (
@@ -215,6 +303,125 @@ const Dashboard = () => {
           linkTo="/admin/services"
         />
       </div>
+
+      {/* Sales Analytics Section */}
+      {analytics && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold">Analyse des Ventes</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard
+              title="Revenu Total"
+              value={`${analytics.total_revenue.toLocaleString()} MAD`}
+              icon={DollarSign}
+              trend={{ value: analytics.revenue_growth, isPositive: analytics.revenue_growth > 0 }}
+            />
+            <StatCard
+              title="Valeur Moyenne Commande"
+              value={`${analytics.average_order_value.toLocaleString()} MAD`}
+              icon={ShoppingBag}
+              trend={{ value: 5, isPositive: true }}
+            />
+            <StatCard
+              title="Taux de Conversion"
+              value={`${analytics.conversion_rate}%`}
+              icon={Percent}
+              trend={{ value: 2, isPositive: true }}
+            />
+          </div>
+          
+          {/* Revenue Chart */}
+          <div className="glass-effect rounded-xl p-6">
+            <h3 className="text-lg font-semibold mb-6">Évolution du Revenu Mensuel</h3>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueData}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
+                  <YAxis stroke="rgba(255,255,255,0.5)" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '8px'
+                    }}
+                    formatter={(value: any) => [`${value.toLocaleString()} MAD`, 'Revenu']}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="var(--primary)"
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Engagement Section */}
+      {analytics && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold">Engagement Utilisateurs</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard
+              title="Utilisateurs Totaux"
+              value={analytics.total_users}
+              icon={Users}
+              trend={{ value: analytics.user_growth, isPositive: analytics.user_growth > 0 }}
+            />
+            <StatCard
+              title="Utilisateurs Actifs"
+              value={analytics.active_users}
+              icon={Zap}
+              trend={{ value: 8, isPositive: true }}
+            />
+            <StatCard
+              title="Pages Vues"
+              value={analytics.page_views.toLocaleString()}
+              icon={Eye}
+              trend={{ value: 12, isPositive: true }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Performance Metrics Section */}
+      {analytics && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold">Indicateurs de Performance</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-6">
+              <PerformanceIndicator
+                title="Santé Inventaire"
+                value={analytics.inventory_health}
+                icon={Package}
+                color="blue"
+                suffix="%"
+              />
+              <PerformanceIndicator
+                title="Utilisation Services"
+                value={analytics.service_utilization}
+                icon={Settings}
+                color="green"
+                suffix="%"
+              />
+            </div>
+            
+            <TopProductsTable topProducts={analytics.top_products} />
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="glass-effect rounded-xl p-6">
