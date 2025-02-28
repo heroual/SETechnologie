@@ -10,7 +10,8 @@ import {
   Bell,
   Cpu,
   Menu,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { auth } from '../../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -27,6 +28,7 @@ const AdminLayout = () => {
     { icon: <Package size={20} />, label: 'Produits', path: '/admin/products' },
     { icon: <Settings size={20} />, label: 'Services', path: '/admin/services' },
     { icon: <Users size={20} />, label: 'Utilisateurs', path: '/admin/users' },
+    { icon: <FileText size={20} />, label: 'Rapports', path: '/admin/reports' },
   ];
 
   const handleLogout = async () => {

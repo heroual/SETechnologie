@@ -127,3 +127,39 @@ export interface DateRange {
   start: Date;
   end: Date;
 }
+
+export interface ReportTemplate {
+  id: string;
+  name: string;
+  description: string;
+  fields: ReportField[];
+  createdAt?: string;
+}
+
+export interface ReportField {
+  id: string;
+  name: string;
+  type: 'text' | 'number' | 'date' | 'chart' | 'table';
+  source: string;
+  width: 'full' | 'half' | 'third';
+}
+
+export interface ScheduledReport {
+  id: string;
+  templateId: string;
+  name: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'custom';
+  nextRun: string;
+  format: 'pdf' | 'excel' | 'csv';
+  recipients: string[];
+  createdAt: string;
+}
+
+export interface ReportData {
+  timestamp: string;
+  stats: DashboardStats | null;
+  analytics: AdvancedAnalytics | null;
+  products: any[] | null;
+  services: any[] | null;
+  users: any[] | null;
+}</b oltAction>

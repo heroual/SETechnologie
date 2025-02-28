@@ -15,6 +15,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import AdminServices from './pages/admin/Services';
 import AdminUsers from './pages/admin/Users';
+import AdminReports from './pages/admin/Reports';
 import AdminLayout from './components/admin/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -118,6 +119,7 @@ function App() {
             <Route path="products" element={<AdminProducts />} />
             <Route path="services" element={<AdminServices />} />
             <Route path="users" element={<AdminUsers />} />
+            <Route path="reports" element={<AdminReports />} />
           </Route>
         </Routes>
         <Toaster position="top-right" />
