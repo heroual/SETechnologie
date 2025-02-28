@@ -106,3 +106,24 @@ export interface ServiceFormData {
   status: 'available' | 'unavailable';
   featured: boolean;
 }
+
+export interface DashboardView {
+  id: string;
+  name: string;
+  widgets: DashboardWidget[];
+}
+
+export interface DashboardWidget {
+  id: string;
+  type: string;
+  position: number;
+  size: 'small' | 'medium' | 'large' | 'full';
+  visible: boolean;
+  expanded?: boolean;
+  settings?: Record<string, any>;
+}
+
+export interface DateRange {
+  start: Date;
+  end: Date;
+}
