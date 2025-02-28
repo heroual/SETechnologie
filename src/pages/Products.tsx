@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { 
   Router, 
   Shield, 
@@ -111,6 +110,72 @@ const products: Product[] = [
       'Audio HD',
       'Étanche IP67'
     ]
+  },
+  {
+    id: 'smart-lock-pro',
+    name: 'Smart Lock Pro',
+    category: 'Smart Home',
+    price: 799,
+    description: 'Serrure connectée avec reconnaissance faciale, empreinte digitale et code PIN pour une sécurité maximale.',
+    images: [
+      'https://images.unsplash.com/photo-1622630998477-20aa696ecb05',
+      'https://images.unsplash.com/photo-1622630998477-20aa696ecb05'
+    ],
+    specs: {
+      dimensions: '15 x 7 x 3 cm',
+      weight: '350g',
+      compatibility: ['Wi-Fi', 'Bluetooth', 'Zigbee'],
+      specifications: [
+        'Reconnaissance faciale',
+        'Lecteur d\'empreintes',
+        'Clavier tactile',
+        'Batterie longue durée'
+      ],
+      certifications: ['CE', 'FCC'],
+      warranty: '2 ans garantie constructeur'
+    },
+    stock: 'En stock',
+    rating: 4.7,
+    reviews: 112,
+    features: [
+      'Accès à distance',
+      'Historique d\'accès',
+      'Alertes en temps réel',
+      'Installation facile'
+    ]
+  },
+  {
+    id: 'mesh-wifi-system',
+    name: 'Système Mesh Wi-Fi',
+    category: 'Réseau',
+    price: 1499,
+    description: 'Système Wi-Fi maillé pour une couverture complète de votre maison ou bureau sans zones mortes.',
+    images: [
+      'https://images.unsplash.com/photo-1573164713988-8665fc963095',
+      'https://images.unsplash.com/photo-1573164713988-8665fc963095'
+    ],
+    specs: {
+      dimensions: '12 x 12 x 5 cm (par unité)',
+      weight: '400g (par unité)',
+      compatibility: ['Wi-Fi 6', '2.4GHz', '5GHz'],
+      specifications: [
+        'Pack de 3 unités',
+        'Couverture jusqu\'à 500m²',
+        'Vitesse jusqu\'à 3 Gbps',
+        'Technologie Tri-Band'
+      ],
+      certifications: ['CE', 'RoHS'],
+      warranty: '3 ans garantie constructeur'
+    },
+    stock: 'Sur commande',
+    rating: 4.9,
+    reviews: 78,
+    features: [
+      'Roaming sans interruption',
+      'Contrôle parental',
+      'Priorisation des appareils',
+      'Configuration facile'
+    ]
   }
 ];
 
@@ -121,7 +186,7 @@ const ProductCard = ({ product }: { product: Product }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-effect rounded-2xl overflow-hidden"
+      className="glass-effect rounded-2xl overflow-hidden h-full flex flex-col"
     >
       <div className="relative">
         <img
@@ -142,12 +207,13 @@ const ProductCard = ({ product }: { product: Product }) => {
               className={`w-2 h-2 rounded-full ${
                 currentImageIndex === index ? 'bg-white' : 'bg-white/50'
               }`}
+              aria-label={`Image ${index + 1}`}
             />
           ))}
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 flex-grow flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold">{product.name}</h3>
           <div className="flex items-center">
@@ -156,7 +222,9 @@ const ProductCard = ({ product }: { product: Product }) => {
           </div>
         </div>
 
-        <p className="text-gray-300 text-sm mb-4">{product.description}</p>
+        <p className="text-gray-300 text-sm mb-4 line-clamp-2 flex-grow">
+          {product.description}
+        </p>
 
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -176,6 +244,8 @@ const ProductCard = ({ product }: { product: Product }) => {
           <span className={`text-sm px-3 py-1 rounded-full ${
             product.stock === 'En stock' 
               ? 'bg-green-500/20 text-green-400'
+              : product.stock === 'Sur commande'
+              ? 'bg-yellow-500/20 text-yellow-400'
               : 'bg-red-500/20 text-red-400'
           }`}>
             {product.stock}
@@ -190,14 +260,12 @@ const ProductCard = ({ product }: { product: Product }) => {
             <ShoppingCart className="w-4 h-4 mr-2" />
             Ajouter au panier
           </motion.button>
-          <Link to={`/products/${product.id}`}>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="px-4 py-2 rounded-full border border-[var(--primary)] text-white"
-            >
-              Détails
-            </motion.button>
-          </Link>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            className="px-4 py-2 rounded-full border border-[var(--primary)] text-white"
+          >
+            Détails
+          </motion.button>
         </div>
       </div>
     </motion.div>
@@ -223,7 +291,7 @@ const Products = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold mb-4 hero-gradient">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4 hero-gradient">
             Nos Produits
           </h1>
           <p className="text-gray-300 max-w-2xl mx-auto">
@@ -233,15 +301,15 @@ const Products = () => {
 
         {/* Filters */}
         <div className="mb-12">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 glass-effect p-6 rounded-xl">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 glass-effect p-4 md:p-6 rounded-xl">
+            <div className="flex flex-wrap items-center gap-3">
               <Filter className="w-5 h-5 text-[var(--primary)]" />
               <div className="flex flex-wrap gap-2">
                 {categories.map(category => (
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-full text-sm transition-all ${
+                    className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full text-sm transition-all ${
                       selectedCategory === category
                         ? 'bg-[var(--primary)] text-white neon-glow'
                         : 'bg-white/5 hover:bg-white/10'
@@ -252,7 +320,7 @@ const Products = () => {
                 ))}
               </div>
             </div>
-            <div className="relative">
+            <div className="relative w-full md:w-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
@@ -266,11 +334,26 @@ const Products = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {filteredProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
+
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg">Aucun produit ne correspond à votre recherche.</p>
+            <button 
+              onClick={() => {
+                setSelectedCategory('Tous');
+                setSearchQuery('');
+              }}
+              className="mt-4 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              Réinitialiser les filtres
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,21 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X, Cpu, FileText } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Menu, X, Cpu } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
 
   const menuItems = [
     { title: 'Accueil', href: '/' },
     { title: 'Produits', href: '/products' },
     { title: 'Services', href: '/services' },
-    { title: 'À propos', href: '/about' },
+    { title: 'Blog', href: '/blog' },
     { title: 'Contact', href: '/contact' },
   ];
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const offset = window.scrollY;
+      if (offset > 50) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Close mobile menu when route changes
+    setIsOpen(false);
+  }, [location]);
+
   return (
-    <nav className="fixed w-full z-50 glass-effect">
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'py-2 backdrop-blur-lg bg-black/70' : 'py-4 glass-effect'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -36,21 +59,20 @@ const Navbar = () => {
                 <motion.div key={item.title} whileHover={{ scale: 1.05 }}>
                   <Link
                     to={item.href}
-                    className="text-gray-300 hover:text-white transition-colors"
+                    className={`text-gray-300 hover:text-white transition-colors ${
+                      location.pathname === item.href ? 'text-white font-medium' : ''
+                    }`}
                   >
                     {item.title}
                   </Link>
                 </motion.div>
               ))}
-              <Link to="/quote-request">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  className="px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow flex items-center"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Demander un devis
-                </motion.button>
-              </Link>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                className="px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow"
+              >
+                Demander un devis
+              </motion.button>
             </div>
           </div>
 
@@ -58,6 +80,7 @@ const Navbar = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-300 hover:text-white"
+              aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -70,25 +93,27 @@ const Navbar = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden glass-effect"
+          exit={{ opacity: 0, y: -20 }}
+          className="md:hidden backdrop-blur-lg bg-black/90 border-t border-white/10"
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {menuItems.map((item) => (
               <Link
                 key={item.title}
                 to={item.href}
-                className="block px-3 py-2 text-gray-300 hover:text-white"
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  location.pathname === item.href
+                    ? 'text-white bg-[var(--primary)]/20'
+                    : 'text-gray-300 hover:text-white hover:bg-white/5'
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 {item.title}
               </Link>
             ))}
-            <Link to="/quote-request" onClick={() => setIsOpen(false)}>
-              <button className="w-full mt-4 px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow flex items-center justify-center">
-                <FileText className="h-4 w-4 mr-2" />
-                Demander un devis
-              </button>
-            </Link>
+            <button className="w-full mt-4 px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow">
+              Demander un devis
+            </button>
           </div>
         </motion.div>
       )}

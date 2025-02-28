@@ -85,10 +85,10 @@ const About = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-20"
         >
-          <h1 className="text-4xl font-bold mb-6 hero-gradient">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-6 hero-gradient">
             Qui Sommes-Nous ?
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">
             SE Technologie est une startup marocaine spécialisée dans la vente et l'installation de solutions IoT, réseau et IT pour particuliers et entreprises.
           </p>
         </motion.div>
@@ -98,15 +98,15 @@ const About = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="glass-effect rounded-2xl p-8 mb-20"
+          className="glass-effect rounded-2xl p-6 md:p-8 mb-20"
         >
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 rounded-full bg-[var(--primary)]/20 flex items-center justify-center neon-glow">
               <Rocket className="w-8 h-8 text-[var(--primary)]" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-center mb-6">Notre Mission</h2>
-          <p className="text-gray-300 text-center text-lg max-w-3xl mx-auto">
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-6">Notre Mission</h2>
+          <p className="text-gray-300 text-center text-base sm:text-lg max-w-3xl mx-auto">
             "Chez SE Technologie, notre objectif est de rendre chaque maison et entreprise plus connectée, sécurisée et performante. Nous proposons des produits innovants et des services professionnels afin de garantir une performance optimale et une expérience utilisateur exceptionnelle."
           </p>
         </motion.div>
@@ -118,10 +118,10 @@ const About = () => {
           viewport={{ once: true }}
           className="mb-20"
         >
-          <h2 className="text-3xl font-bold text-center mb-12 hero-gradient">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12 hero-gradient">
             Nos Valeurs
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {values.map((value, index) => (
               <motion.div
                 key={value.title}
@@ -129,7 +129,7 @@ const About = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="glass-effect rounded-xl p-6 text-center"
+                className="glass-effect rounded-xl p-6 text-center h-full"
               >
                 <div className="w-16 h-16 rounded-full bg-[var(--primary)]/20 flex items-center justify-center mx-auto mb-4 neon-glow">
                   {value.icon}
@@ -148,7 +148,7 @@ const About = () => {
           viewport={{ once: true }}
           className="mb-20"
         >
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {achievements.map((achievement, index) => (
               <motion.div
                 key={achievement.label}
@@ -161,7 +161,7 @@ const About = () => {
                 <div className="w-12 h-12 rounded-full bg-[var(--primary)]/20 flex items-center justify-center mx-auto mb-4">
                   {achievement.icon}
                 </div>
-                <h3 className="text-3xl font-bold hero-gradient mb-2">{achievement.number}</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold hero-gradient mb-2">{achievement.number}</h3>
                 <p className="text-gray-300">{achievement.label}</p>
               </motion.div>
             ))}
@@ -173,9 +173,9 @@ const About = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="glass-effect rounded-2xl p-8 mb-20"
+          className="glass-effect rounded-2xl p-6 md:p-8 mb-20"
         >
-          <h2 className="text-2xl font-bold text-center mb-8">Nos Objectifs</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-8">Nos Objectifs</h2>
           <div className="space-y-4 max-w-3xl mx-auto">
             {[
               'Devenir un leader local dans le domaine des solutions IoT et réseaux au Maroc.',
@@ -188,9 +188,9 @@ const About = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="flex items-center"
+                className="flex items-start"
               >
-                <ChevronRight className="w-5 h-5 text-[var(--primary)] mr-3 flex-shrink-0" />
+                <ChevronRight className="w-5 h-5 text-[var(--primary)] mr-3 flex-shrink-0 mt-0.5" />
                 <p className="text-gray-300">{objective}</p>
               </motion.div>
             ))}
@@ -202,10 +202,10 @@ const About = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="glass-effect rounded-2xl p-8"
+          className="glass-effect rounded-2xl p-6 md:p-8"
         >
-          <h2 className="text-2xl font-bold text-center mb-8">Nos Coordonnées</h2>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-8">Nos Coordonnées</h2>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 max-w-4xl mx-auto">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 rounded-full bg-[var(--primary)]/20 flex items-center justify-center flex-shrink-0">
                 <MapPin className="w-6 h-6 text-[var(--primary)]" />

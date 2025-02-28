@@ -1,27 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Cpu, Mail, Lock, AlertCircle } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
+import { Cpu, Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
+        if (session) {
+          navigate('/admin');
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await login(email, password);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success('Connexion réussie');
       navigate('/admin');
     } catch (error) {
+      toast.error('Erreur de connexion. Vérifiez vos identifiants.');
       console.error('Login error:', error);
-      // Toast notification is handled in the AuthContext
     } finally {
       setLoading(false);
     }
@@ -45,12 +70,13 @@ const Login = () => {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                 Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
+                  id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -62,12 +88,13 @@ const Login = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                 Mot de passe
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
+                  id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -81,7 +108,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-4 py-2 rounded-lg bg-[var(--primary)] text-white neon-glow disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 rounded-lg bg-[var(--primary)] text-white neon-glow disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
@@ -92,6 +119,13 @@ const Login = () => {
               <AlertCircle className="h-4 w-4 mr-2" />
               <span>Contactez l'administrateur pour créer un compte</span>
             </div>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-white/10 text-center">
+            <Link to="/" className="inline-flex items-center text-gray-400 hover:text-white text-sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour au site
+            </Link>
           </div>
         </motion.div>
       </div>

@@ -17,7 +17,7 @@ const Footer = () => {
   return (
     <footer className="bg-black/30 backdrop-blur-lg border-t border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
           <div>
             <Link to="/" className="flex items-center space-x-2 mb-4">
@@ -28,16 +28,16 @@ const Footer = () => {
               Solutions innovantes pour votre entreprise et votre maison. Expert en IoT, réseau et sécurité.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-[var(--primary)] transition-colors">
+              <a href="#" className="text-gray-400 hover:text-[var(--primary)] transition-colors" aria-label="Facebook">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[var(--primary)] transition-colors">
+              <a href="#" className="text-gray-400 hover:text-[var(--primary)] transition-colors" aria-label="Twitter">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[var(--primary)] transition-colors">
+              <a href="#" className="text-gray-400 hover:text-[var(--primary)] transition-colors" aria-label="Instagram">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[var(--primary)] transition-colors">
+              <a href="#" className="text-gray-400 hover:text-[var(--primary)] transition-colors" aria-label="LinkedIn">
                 <Linkedin className="h-5 w-5" />
               </a>
             </div>
@@ -63,8 +63,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Contact
+                <Link to="/blog" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Blog
                 </Link>
               </li>
             </ul>
@@ -123,7 +123,7 @@ const Footer = () => {
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
               © {currentYear} SE Technologie. Tous droits réservés.
             </p>
-            <div className="flex space-x-6">
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6">
               <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
                 Mentions Légales
               </a>
