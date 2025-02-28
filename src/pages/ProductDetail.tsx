@@ -14,6 +14,7 @@ import {
   Info
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useCart } from '../contexts/CartContext';
 
 // Types
 interface Product {
@@ -123,6 +124,7 @@ const ProductDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     // Simulate API call
@@ -149,7 +151,26 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = () => {
-    toast.success(`${product?.name} ajouté au panier`);
+    if (!product) return;
+    
+    // Convert the product to the format expected by CartContext
+    const cartProduct = {
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      description: product.description,
+      images: product.images,
+      price: product.promo 
+        ? product.price * (1 - product.promo.percentage / 100) 
+        : product.price,
+      stock: 100, // Default stock value
+      status: 'active',
+      seo_keywords: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    addToCart(cartProduct, quantity);
   };
 
   const handleAddToWishlist = () => {

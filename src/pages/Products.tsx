@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Router, 
@@ -13,6 +13,9 @@ import {
   Filter,
   Search
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useCart } from '../contexts/CartContext';
+import toast from 'react-hot-toast';
 
 // Types
 interface Product {
@@ -181,6 +184,28 @@ const products: Product[] = [
 
 const ProductCard = ({ product }: { product: Product }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    // Convert the product to the format expected by CartContext
+    const cartProduct = {
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      description: product.description,
+      images: product.images,
+      price: product.promo 
+        ? product.price * (1 - product.promo.percentage / 100) 
+        : product.price,
+      stock: 100, // Default stock value
+      status: 'active',
+      seo_keywords: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    addToCart(cartProduct);
+  };
 
   return (
     <motion.div
@@ -256,16 +281,19 @@ const ProductCard = ({ product }: { product: Product }) => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             className="flex-1 px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow flex items-center justify-center"
+            onClick={handleAddToCart}
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
             Ajouter au panier
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            className="px-4 py-2 rounded-full border border-[var(--primary)] text-white"
-          >
-            Détails
-          </motion.button>
+          <Link to={`/products/${product.id}`}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              className="px-4 py-2 rounded-full border border-[var(--primary)] text-white"
+            >
+              Détails
+            </motion.button>
+          </Link>
         </div>
       </div>
     </motion.div>
