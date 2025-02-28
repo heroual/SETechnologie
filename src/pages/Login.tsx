@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Cpu, Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { auth, isDemoMode } from '../lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -15,9 +16,9 @@ const Login = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setIsAuthenticated(!!session);
-        if (session) {
+        const user = auth.currentUser;
+        setIsAuthenticated(!!user);
+        if (user) {
           navigate('/admin');
         }
       } catch (error) {
@@ -33,15 +34,16 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        throw error;
+      // Check if we're using demo configuration
+      if (isDemoMode) {
+        // Simulate login for demo mode
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        toast.success('Connexion réussie (mode démo)');
+        navigate('/admin');
+        return;
       }
 
+      await signInWithEmailAndPassword(auth, email, password);
       toast.success('Connexion réussie');
       navigate('/admin');
     } catch (error) {

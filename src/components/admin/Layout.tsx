@@ -12,7 +12,8 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { auth } from '../../lib/firebase';
+import { signOut } from 'firebase/auth';
 import toast from 'react-hot-toast';
 
 const AdminLayout = () => {
@@ -30,8 +31,7 @@ const AdminLayout = () => {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      await signOut(auth);
       toast.success('Déconnexion réussie');
       navigate('/login');
     } catch (error) {

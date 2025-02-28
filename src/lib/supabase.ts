@@ -1,21 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
+// This file is kept for reference but no longer used
+// The application now uses Firebase instead of Supabase
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+console.warn('Supabase is no longer used in this project. Please use Firebase services instead.');
 
-let supabase;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables. Please connect to Supabase using the "Connect to Supabase" button.');
-  // Provide fallback values for development
-  const fallbackUrl = 'https://your-project.supabase.co';
-  const fallbackKey = 'your-anon-key';
-  
-  // Create client with fallback values
-  supabase = createClient(fallbackUrl, fallbackKey);
-} else {
-  // Create client with actual environment variables
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-}
-
-export { supabase };
+// Mock client to prevent errors
+export const supabase = {
+  auth: {
+    getSession: async () => ({ data: { session: null } }),
+    signInWithPassword: async () => ({ error: new Error('Supabase is not configured') }),
+    signOut: async () => ({ error: null })
+  }
+};
