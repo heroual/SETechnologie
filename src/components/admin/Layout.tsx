@@ -11,7 +11,10 @@ import {
   Cpu,
   Menu,
   X,
-  FileText
+  FileText,
+  ShoppingBag,
+  Mail,
+  ShoppingCart
 } from 'lucide-react';
 import { auth } from '../../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -28,8 +31,11 @@ const AdminLayout = () => {
     { icon: <LayoutDashboard size={20} />, label: 'Tableau de bord', path: '/admin' },
     { icon: <Package size={20} />, label: 'Produits', path: '/admin/products' },
     { icon: <Settings size={20} />, label: 'Services', path: '/admin/services' },
+    { icon: <ShoppingCart size={20} />, label: 'Commandes', path: '/admin/orders' },
     { icon: <Users size={20} />, label: 'Utilisateurs', path: '/admin/users' },
     { icon: <FileText size={20} />, label: 'Rapports', path: '/admin/reports' },
+    { icon: <Mail size={20} />, label: 'Emails', path: '/admin/email-settings' },
+    { icon: <ShoppingBag size={20} />, label: 'Boutique', path: '/admin/shop-settings' },
   ];
 
   const handleLogout = async () => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X, Cpu } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import CartIcon from './CartIcon';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -67,16 +68,20 @@ const Navbar = () => {
                   </Link>
                 </motion.div>
               ))}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow"
-              >
-                Demander un devis
-              </motion.button>
+              <CartIcon />
+              <Link to="/quote-request">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  className="px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow"
+                >
+                  Demander un devis
+                </motion.button>
+              </Link>
             </div>
           </div>
 
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-4">
+            <CartIcon />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-300 hover:text-white"
@@ -111,9 +116,11 @@ const Navbar = () => {
                 {item.title}
               </Link>
             ))}
-            <button className="w-full mt-4 px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow">
-              Demander un devis
-            </button>
+            <Link to="/quote-request" className="block w-full mt-4">
+              <button className="w-full px-4 py-2 rounded-full bg-[var(--primary)] text-white neon-glow">
+                Demander un devis
+              </button>
+            </Link>
           </div>
         </motion.div>
       )}
