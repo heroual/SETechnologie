@@ -162,4 +162,69 @@ export interface ReportData {
   products: any[] | null;
   services: any[] | null;
   users: any[] | null;
-}</b oltAction>
+}
+
+// Notification System Types
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  read: boolean;
+  actionable: boolean;
+  actionLink?: string;
+  actionText?: string;
+  timestamp: string;
+  category: 'system' | 'inventory' | 'sales' | 'security' | 'user';
+}
+
+// External Data Source Types
+export interface ExternalDataSource {
+  id: string;
+  name: string;
+  type: 'api' | 'webhook' | 'rss' | 'custom';
+  url: string;
+  lastSync: string;
+  status: 'active' | 'error' | 'pending';
+  refreshInterval: number; // in minutes
+  credentials?: {
+    apiKey?: string;
+    username?: string;
+    // Other credential types as needed
+  };
+}
+
+export interface ExternalDataPoint {
+  id: string;
+  sourceId: string;
+  name: string;
+  value: any;
+  timestamp: string;
+  metadata?: Record<string, any>;
+}
+
+// Action Center Types
+export interface ActionItem {
+  id: string;
+  title: string;
+  description: string;
+  type: 'approval' | 'task' | 'alert' | 'reminder';
+  status: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  dueDate?: string;
+  assignedTo?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  relatedEntityType?: 'product' | 'service' | 'user' | 'order';
+  relatedEntityId?: string;
+}
+
+export interface ActionHistory {
+  id: string;
+  actionItemId: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  comment?: string;
+  performedBy: string;
+  timestamp: string;
+}

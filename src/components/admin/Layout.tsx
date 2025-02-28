@@ -16,11 +16,12 @@ import {
 import { auth } from '../../lib/firebase';
 import { signOut } from 'firebase/auth';
 import toast from 'react-hot-toast';
+import NotificationCenter from './NotificationCenter';
+import { NotificationProvider } from '../../contexts/NotificationContext';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [notifications] = React.useState(2); // Example notification count
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const menuItems = [
@@ -91,68 +92,63 @@ const AdminLayout = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-white flex flex-col md:flex-row">
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/80 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    <NotificationProvider>
+      <div className="min-h-screen bg-[#0A0A0F] text-white flex flex-col md:flex-row">
+        {/* Mobile sidebar backdrop */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/80 z-40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
-      {/* Sidebar for desktop */}
-      <motion.aside
-        initial={{ x: -200 }}
-        animate={{ x: 0 }}
-        className="hidden md:block w-64 bg-black/30 backdrop-blur-xl border-r border-white/10 h-screen sticky top-0"
-      >
-        {sidebar}
-      </motion.aside>
+        {/* Sidebar for desktop */}
+        <motion.aside
+          initial={{ x: -200 }}
+          animate={{ x: 0 }}
+          className="hidden md:block w-64 bg-black/30 backdrop-blur-xl border-r border-white/10 h-screen sticky top-0"
+        >
+          {sidebar}
+        </motion.aside>
 
-      {/* Mobile sidebar */}
-      <motion.aside
-        initial={{ x: -280 }}
-        animate={{ x: sidebarOpen ? 0 : -280 }}
-        transition={{ type: 'spring', damping: 20 }}
-        className="fixed top-0 left-0 h-screen w-64 bg-black/90 backdrop-blur-xl border-r border-white/10 z-50 md:hidden"
-      >
-        {sidebar}
-      </motion.aside>
+        {/* Mobile sidebar */}
+        <motion.aside
+          initial={{ x: -280 }}
+          animate={{ x: sidebarOpen ? 0 : -280 }}
+          transition={{ type: 'spring', damping: 20 }}
+          className="fixed top-0 left-0 h-screen w-64 bg-black/90 backdrop-blur-xl border-r border-white/10 z-50 md:hidden"
+        >
+          {sidebar}
+        </motion.aside>
 
-      {/* Main Content */}
-      <div className="flex-1">
-        {/* Header */}
-        <header className="h-16 border-b border-white/10 bg-black/30 backdrop-blur-xl flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
-          <div className="flex items-center">
-            <button 
-              className="mr-4 p-1 rounded-md hover:bg-white/10 md:hidden"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-            <h1 className="text-xl font-semibold">{getCurrentPageTitle()}</h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Bell size={20} className="text-gray-400 hover:text-white cursor-pointer" />
-              {notifications > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  {notifications}
-                </span>
-              )}
+        {/* Main Content */}
+        <div className="flex-1">
+          {/* Header */}
+          <header className="h-16 border-b border-white/10 bg-black/30 backdrop-blur-xl flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
+            <div className="flex items-center">
+              <button 
+                className="mr-4 p-1 rounded-md hover:bg-white/10 md:hidden"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              >
+                {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+              <h1 className="text-xl font-semibold">{getCurrentPageTitle()}</h1>
             </div>
-            <div className="w-8 h-8 rounded-full bg-[var(--primary)]/20 flex items-center justify-center">
-              <span className="text-sm font-medium">AD</span>
+            <div className="flex items-center space-x-4">
+              <NotificationCenter />
+              <div className="w-8 h-8 rounded-full bg-[var(--primary)]/20 flex items-center justify-center">
+                <span className="text-sm font-medium">AD</span>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Content */}
-        <main className="p-4 md:p-6">
-          <Outlet />
-        </main>
+          {/* Content */}
+          <main className="p-4 md:p-6">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </NotificationProvider>
   );
 };
 
