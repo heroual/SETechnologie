@@ -9,6 +9,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db, isDemoMode } from '../lib/firebase';
 import { FirebaseUser, AuthContextType } from '../types';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 

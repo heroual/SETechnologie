@@ -5,50 +5,33 @@ import { Cpu, Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
 import { auth, isDemoMode } from '../lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { currentUser, login } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const user = auth.currentUser;
-        setIsAuthenticated(!!user);
-        if (user) {
-          navigate('/admin');
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
-      }
-    };
-    
-    checkAuth();
-  }, [navigate]);
+    // If user is already logged in, redirect to admin dashboard
+    if (currentUser) {
+      navigate('/admin');
+    }
+  }, [currentUser, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Check if we're using demo configuration
-      if (isDemoMode) {
-        // Simulate login for demo mode
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        toast.success('Connexion réussie (mode démo)');
-        navigate('/admin');
-        return;
-      }
-
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success('Connexion réussie');
-      navigate('/admin');
+      // Use the login function from AuthContext instead of direct Firebase call
+      await login(email, password);
+      // No need to navigate here as the useEffect will handle it
     } catch (error) {
-      toast.error('Erreur de connexion. Vérifiez vos identifiants.');
       console.error('Login error:', error);
+      // Toast error is already handled in the login function
     } finally {
       setLoading(false);
     }
