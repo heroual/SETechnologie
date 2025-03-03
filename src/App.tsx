@@ -1,31 +1,42 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import Products from './pages/Products';
-import ProductDetail from './pages/ProductDetail';
-import Services from './pages/Services';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import QuoteRequest from './pages/QuoteRequest';
-import Login from './pages/Login';
-import AdminDashboard from './pages/admin/Dashboard';
-import AdminProducts from './pages/admin/Products';
-import AdminServices from './pages/admin/Services';
-import AdminUsers from './pages/admin/Users';
-import AdminReports from './pages/admin/Reports';
-import AdminOrders from './pages/admin/Orders';
-import AdminEmailSettings from './pages/admin/EmailSettings';
-import AdminShopSettings from './pages/admin/ShopSettings';
-import AdminLayout from './components/admin/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import OrderConfirmation from './pages/OrderConfirmation';
 import { CartProvider } from './contexts/CartContext';
 import { AuthProvider } from './contexts/AuthContext';
+
+// Lazy load non-critical pages
+const Products = lazy(() => import('./pages/Products'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Services = lazy(() => import('./pages/Services'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const QuoteRequest = lazy(() => import('./pages/QuoteRequest'));
+const Login = lazy(() => import('./pages/Login'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
+
+// Admin pages
+const AdminLayout = lazy(() => import('./components/admin/Layout'));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
+const AdminProducts = lazy(() => import('./pages/admin/Products'));
+const AdminServices = lazy(() => import('./pages/admin/Services'));
+const AdminUsers = lazy(() => import('./pages/admin/Users'));
+const AdminReports = lazy(() => import('./pages/admin/Reports'));
+const AdminOrders = lazy(() => import('./pages/admin/Orders'));
+const AdminEmailSettings = lazy(() => import('./pages/admin/EmailSettings'));
+const AdminShopSettings = lazy(() => import('./pages/admin/ShopSettings'));
+const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
+
+// Loading component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+  </div>
+);
 
 function App() {
   return (
@@ -53,7 +64,9 @@ function App() {
                   <>
                     <Navbar />
                     <main className="flex-grow">
-                      <Products />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Products />
+                      </Suspense>
                     </main>
                     <Footer />
                   </>
@@ -65,7 +78,9 @@ function App() {
                   <>
                     <Navbar />
                     <main className="flex-grow">
-                      <ProductDetail />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <ProductDetail />
+                      </Suspense>
                     </main>
                     <Footer />
                   </>
@@ -77,7 +92,9 @@ function App() {
                   <>
                     <Navbar />
                     <main className="flex-grow">
-                      <Services />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Services />
+                      </Suspense>
                     </main>
                     <Footer />
                   </>
@@ -89,7 +106,9 @@ function App() {
                   <>
                     <Navbar />
                     <main className="flex-grow">
-                      <About />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <About />
+                      </Suspense>
                     </main>
                     <Footer />
                   </>
@@ -101,7 +120,9 @@ function App() {
                   <>
                     <Navbar />
                     <main className="flex-grow">
-                      <Contact />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Contact />
+                      </Suspense>
                     </main>
                     <Footer />
                   </>
@@ -113,7 +134,9 @@ function App() {
                   <>
                     <Navbar />
                     <main className="flex-grow">
-                      <QuoteRequest />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <QuoteRequest />
+                      </Suspense>
                     </main>
                     <Footer />
                   </>
@@ -125,7 +148,9 @@ function App() {
                   <>
                     <Navbar />
                     <main className="flex-grow">
-                      <Cart />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Cart />
+                      </Suspense>
                     </main>
                     <Footer />
                   </>
@@ -137,7 +162,9 @@ function App() {
                   <>
                     <Navbar />
                     <main className="flex-grow">
-                      <Checkout />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Checkout />
+                      </Suspense>
                     </main>
                     <Footer />
                   </>
@@ -149,7 +176,9 @@ function App() {
                   <>
                     <Navbar />
                     <main className="flex-grow">
-                      <OrderConfirmation />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <OrderConfirmation />
+                      </Suspense>
                     </main>
                     <Footer />
                   </>
@@ -157,18 +186,92 @@ function App() {
               />
               
               {/* Auth Routes */}
-              <Route path="/login" element={<Login />} />
+              <Route 
+                path="/login" 
+                element={
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Login />
+                  </Suspense>
+                } 
+              />
 
               {/* Admin Routes */}
-              <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="services" element={<AdminServices />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="reports" element={<AdminReports />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="email-settings" element={<AdminEmailSettings />} />
-                <Route path="shop-settings" element={<AdminShopSettings />} />
+              <Route 
+                path="/admin" 
+                element={
+                  <Suspense fallback={<LoadingFallback />}>
+                    <ProtectedRoute>
+                      <Suspense fallback={<LoadingFallback />}>
+                        <AdminLayout />
+                      </Suspense>
+                    </ProtectedRoute>
+                  </Suspense>
+                }
+              >
+                <Route 
+                  index 
+                  element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminDashboard />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="products" 
+                  element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminProducts />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="services" 
+                  element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminServices />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="users" 
+                  element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminUsers />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="reports" 
+                  element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminReports />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="orders" 
+                  element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminOrders />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="email-settings" 
+                  element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminEmailSettings />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="shop-settings" 
+                  element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminShopSettings />
+                    </Suspense>
+                  } 
+                />
               </Route>
             </Routes>
             <Toaster position="top-right" />

@@ -1,13 +1,19 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <AuthProvider>
+// Use a more performant approach to hydration
+const root = document.getElementById('root');
+
+if (root) {
+  // Create a root for concurrent rendering
+  const reactRoot = createRoot(root);
+  
+  // Render the app
+  reactRoot.render(
+    <StrictMode>
       <App />
-    </AuthProvider>
-  </StrictMode>
-);
+    </StrictMode>
+  );
+}
