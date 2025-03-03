@@ -6,6 +6,8 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import { CartProvider } from './contexts/CartContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { ProductProvider } from './contexts/ProductContext';
+import { ServiceProvider } from './contexts/ServiceContext';
 
 // Lazy load non-critical pages
 const Products = lazy(() => import('./pages/Products'));
@@ -41,243 +43,247 @@ const LoadingFallback = () => (
 function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <Router>
-          <div className="min-h-screen bg-[var(--background)] flex flex-col">
-            <Routes>
-              {/* Public Routes */}
-              <Route
-                path="/"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Home />
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              <Route
-                path="/products"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
+      <ProductProvider>
+        <ServiceProvider>
+          <CartProvider>
+            <Router>
+              <div className="min-h-screen bg-[var(--background)] flex flex-col">
+                <Routes>
+                  {/* Public Routes */}
+                  <Route
+                    path="/"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Home />
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/products"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <Products />
+                          </Suspense>
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/products/:id"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <ProductDetail />
+                          </Suspense>
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/services"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <Services />
+                          </Suspense>
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/about"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <About />
+                          </Suspense>
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/contact"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <Contact />
+                          </Suspense>
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/quote-request"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <QuoteRequest />
+                          </Suspense>
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/cart"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <Cart />
+                          </Suspense>
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/checkout"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <Checkout />
+                          </Suspense>
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/order-confirmation"
+                    element={
+                      <>
+                        <Navbar />
+                        <main className="flex-grow">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OrderConfirmation />
+                          </Suspense>
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
+                  
+                  {/* Auth Routes */}
+                  <Route 
+                    path="/login" 
+                    element={
                       <Suspense fallback={<LoadingFallback />}>
-                        <Products />
+                        <Login />
                       </Suspense>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              <Route
-                path="/products/:id"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <ProductDetail />
-                      </Suspense>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              <Route
-                path="/services"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <Services />
-                      </Suspense>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              <Route
-                path="/about"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <About />
-                      </Suspense>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              <Route
-                path="/contact"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <Contact />
-                      </Suspense>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              <Route
-                path="/quote-request"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <QuoteRequest />
-                      </Suspense>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              <Route
-                path="/cart"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <Cart />
-                      </Suspense>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              <Route
-                path="/checkout"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <Checkout />
-                      </Suspense>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              <Route
-                path="/order-confirmation"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OrderConfirmation />
-                      </Suspense>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-              
-              {/* Auth Routes */}
-              <Route 
-                path="/login" 
-                element={
-                  <Suspense fallback={<LoadingFallback />}>
-                    <Login />
-                  </Suspense>
-                } 
-              />
+                    } 
+                  />
 
-              {/* Admin Routes */}
-              <Route 
-                path="/admin" 
-                element={
-                  <Suspense fallback={<LoadingFallback />}>
-                    <ProtectedRoute>
+                  {/* Admin Routes */}
+                  <Route 
+                    path="/admin" 
+                    element={
                       <Suspense fallback={<LoadingFallback />}>
-                        <AdminLayout />
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <AdminLayout />
+                          </Suspense>
+                        </ProtectedRoute>
                       </Suspense>
-                    </ProtectedRoute>
-                  </Suspense>
-                }
-              >
-                <Route 
-                  index 
-                  element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <AdminDashboard />
-                    </Suspense>
-                  } 
-                />
-                <Route 
-                  path="products" 
-                  element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <AdminProducts />
-                    </Suspense>
-                  } 
-                />
-                <Route 
-                  path="services" 
-                  element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <AdminServices />
-                    </Suspense>
-                  } 
-                />
-                <Route 
-                  path="users" 
-                  element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <AdminUsers />
-                    </Suspense>
-                  } 
-                />
-                <Route 
-                  path="reports" 
-                  element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <AdminReports />
-                    </Suspense>
-                  } 
-                />
-                <Route 
-                  path="orders" 
-                  element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <AdminOrders />
-                    </Suspense>
-                  } 
-                />
-                <Route 
-                  path="email-settings" 
-                  element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <AdminEmailSettings />
-                    </Suspense>
-                  } 
-                />
-                <Route 
-                  path="shop-settings" 
-                  element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <AdminShopSettings />
-                    </Suspense>
-                  } 
-                />
-              </Route>
-            </Routes>
-            <Toaster position="top-right" />
-          </div>
-        </Router>
-      </CartProvider>
+                    }
+                  >
+                    <Route 
+                      index 
+                      element={
+                        <Suspense fallback={<LoadingFallback />}>
+                          <AdminDashboard />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="products" 
+                      element={
+                        <Suspense fallback={<LoadingFallback />}>
+                          <AdminProducts />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="services" 
+                      element={
+                        <Suspense fallback={<LoadingFallback />}>
+                          <AdminServices />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="users" 
+                      element={
+                        <Suspense fallback={<LoadingFallback />}>
+                          <AdminUsers />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="reports" 
+                      element={
+                        <Suspense fallback={<LoadingFallback />}>
+                          <AdminReports />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="orders" 
+                      element={
+                        <Suspense fallback={<LoadingFallback />}>
+                          <AdminOrders />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="email-settings" 
+                      element={
+                        <Suspense fallback={<LoadingFallback />}>
+                          <AdminEmailSettings />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="shop-settings" 
+                      element={
+                        <Suspense fallback={<LoadingFallback />}>
+                          <AdminShopSettings />
+                        </Suspense>
+                      } 
+                    />
+                  </Route>
+                </Routes>
+                <Toaster position="top-right" />
+              </div>
+            </Router>
+          </CartProvider>
+        </ServiceProvider>
+      </ProductProvider>
     </AuthProvider>
   );
 }

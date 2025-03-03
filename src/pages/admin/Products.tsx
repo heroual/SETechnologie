@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -9,11 +9,13 @@ import {
   Trash,
   Eye,
   Upload,
-  X
+  X,
+  Loader
 } from 'lucide-react';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '../../services/productService';
+import { createProduct, updateProduct, deleteProduct } from '../../services/productService';
 import type { Product, ProductFormData } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
+import { useProducts } from '../../contexts/ProductContext';
 import toast from 'react-hot-toast';
 import ProductForm from '../../components/admin/ProductForm';
 import DeleteConfirmation from '../../components/admin/DeleteConfirmation';
@@ -109,8 +111,7 @@ const ProductRow = ({
 
 const Products = () => {
   const { currentUser } = useAuth();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { products, loading, error, refreshProducts } = useProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -122,23 +123,6 @@ const Products = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const productsData = await getProducts();
-      setProducts(productsData);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast.error('Erreur lors du chargement des produits');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddProduct = () => {
     setEditingProduct(null);
@@ -178,8 +162,7 @@ const Products = () => {
         toast.success('Produit ajouté avec succès');
       }
       
-      // Refresh products list
-      fetchProducts();
+      // No need to refresh products as we're using real-time listeners
       setShowForm(false);
     } catch (error) {
       console.error('Error saving product:', error);
@@ -200,7 +183,7 @@ const Products = () => {
       );
       
       toast.success('Produit supprimé avec succès');
-      fetchProducts();
+      // No need to refresh products as we're using real-time listeners
       setShowDeleteConfirm(false);
       setProductToDelete(null);
     } catch (error) {
@@ -299,7 +282,17 @@ const Products = () => {
       <div className="glass-effect rounded-xl overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+            <Loader className="h-12 w-12 text-[var(--primary)] animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-64">
+            <p className="text-red-400 mb-4">{error}</p>
+            <button 
+              onClick={() => refreshProducts()}
+              className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white"
+            >
+              Réessayer
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">

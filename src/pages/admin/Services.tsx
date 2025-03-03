@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -9,11 +9,13 @@ import {
   Trash,
   Eye,
   Star,
-  X
+  X,
+  Loader
 } from 'lucide-react';
-import { getServices, createService, updateService, deleteService } from '../../services/serviceService';
+import { createService, updateService, deleteService } from '../../services/serviceService';
 import type { Service, ServiceFormData } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
+import { useServices } from '../../contexts/ServiceContext';
 import toast from 'react-hot-toast';
 import ServiceForm from '../../components/admin/ServiceForm';
 import DeleteConfirmation from '../../components/admin/DeleteConfirmation';
@@ -139,8 +141,7 @@ const ServiceCard = ({
 
 const Services = () => {
   const { currentUser } = useAuth();
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { services, loading, error, refreshServices } = useServices();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -152,23 +153,6 @@ const Services = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    fetchServices();
-  }, []);
-
-  const fetchServices = async () => {
-    try {
-      setLoading(true);
-      const servicesData = await getServices();
-      setServices(servicesData);
-    } catch (error) {
-      console.error('Error fetching services:', error);
-      toast.error('Erreur lors du chargement des services');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddService = () => {
     setEditingService(null);
@@ -198,7 +182,7 @@ const Services = () => {
       );
       
       toast.success(`Service ${!service.featured ? 'mis en avant' : 'retiré de la mise en avant'}`);
-      fetchServices();
+      // No need to refresh services as we're using real-time listeners
     } catch (error) {
       console.error('Error toggling featured status:', error);
       toast.error('Erreur lors de la mise à jour du service');
@@ -228,8 +212,7 @@ const Services = () => {
         toast.success('Service ajouté avec succès');
       }
       
-      // Refresh services list
-      fetchServices();
+      // No need to refresh services as we're using real-time listeners
       setShowForm(false);
     } catch (error) {
       console.error('Error saving service:', error);
@@ -250,7 +233,7 @@ const Services = () => {
       );
       
       toast.success('Service supprimé avec succès');
-      fetchServices();
+      // No need to refresh services as we're using real-time listeners
       setShowDeleteConfirm(false);
       setServiceToDelete(null);
     } catch (error) {
@@ -342,7 +325,17 @@ const Services = () => {
       {/* Services Grid */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+          <Loader className="h-12 w-12 text-[var(--primary)] animate-spin" />
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center h-64">
+          <p className="text-red-400 mb-4">{error}</p>
+          <button 
+            onClick={() => refreshServices()}
+            className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white"
+          >
+            Réessayer
+          </button>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,29 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Wifi, Home as HomeIcon, ChevronRight, Star, Users, Clock, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useProducts } from '../contexts/ProductContext';
+import { useServices } from '../contexts/ServiceContext';
 
 const Home = () => {
-  const products = [
-    {
-      icon: <HomeIcon className="h-8 w-8" />,
-      title: 'Smart Home',
-      description: 'Solutions domotiques intelligentes pour votre maison',
-      link: '/products'
-    },
-    {
-      icon: <Wifi className="h-8 w-8" />,
-      title: 'Réseau & Wi-Fi',
-      description: 'Connectivité haute performance pour entreprises et particuliers',
-      link: '/products'
-    },
-    {
-      icon: <Shield className="h-8 w-8" />,
-      title: 'Sécurité',
-      description: 'Systèmes de surveillance et protection avancés',
-      link: '/products'
+  const { products, loading: productsLoading } = useProducts();
+  const { services, loading: servicesLoading } = useServices();
+  
+  // Featured products and services
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [featuredServices, setFeaturedServices] = useState([]);
+
+  useEffect(() => {
+    // Get featured products (first 3 active products)
+    if (!productsLoading && products.length > 0) {
+      const activeProducts = products
+        .filter(product => product.status === 'active')
+        .slice(0, 3);
+      setFeaturedProducts(activeProducts);
     }
-  ];
+
+    // Get featured services
+    if (!servicesLoading && services.length > 0) {
+      const featured = services
+        .filter(service => service.featured && service.status === 'available')
+        .slice(0, 3);
+      setFeaturedServices(featured);
+    }
+  }, [products, services, productsLoading, servicesLoading]);
 
   const stats = [
     { icon: <Users />, value: '500+', label: 'Clients Satisfaits' },
@@ -102,7 +108,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Products Section */}
+      {/* Featured Products Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -113,36 +119,123 @@ const Home = () => {
             className="text-center mb-16"
           >
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 hero-gradient">
-              Nos Solutions
+              Nos Produits Vedettes
             </h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
-              Des produits innovants pour répondre à vos besoins technologiques, conçus pour améliorer votre quotidien
+              Découvrez notre sélection de produits innovants pour améliorer votre quotidien
             </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-            {products.map((product, index) => (
+            {featuredProducts.map((product, index) => (
               <motion.div
-                key={product.title}
+                key={product.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.2 }}
                 viewport={{ once: true }}
                 className="glass-effect rounded-xl p-6 hover:neon-glow transition-all duration-300"
               >
-                <div className="text-[var(--primary)] mb-4">{product.icon}</div>
-                <h3 className="text-xl font-bold mb-2">{product.title}</h3>
-                <p className="text-gray-300 mb-4">{product.description}</p>
-                <Link to={product.link}>
-                  <motion.div
-                    className="inline-flex items-center text-[var(--primary)] cursor-pointer"
-                    whileHover={{ x: 5 }}
-                  >
-                    En savoir plus <ChevronRight className="ml-1 h-4 w-4" />
-                  </motion.div>
-                </Link>
+                <div className="h-48 mb-4 overflow-hidden rounded-lg">
+                  <img 
+                    src={product.images[0] || 'https://via.placeholder.com/300'} 
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h3 className="text-xl font-bold mb-2">{product.name}</h3>
+                <p className="text-gray-300 mb-4 line-clamp-2">{product.description}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-xl font-bold hero-gradient">{product.price} MAD</span>
+                  <Link to={`/products/${product.id}`}>
+                    <motion.div
+                      className="inline-flex items-center text-[var(--primary)] cursor-pointer"
+                      whileHover={{ x: 5 }}
+                    >
+                      En savoir plus <ChevronRight className="ml-1 h-4 w-4" />
+                    </motion.div>
+                  </Link>
+                </div>
               </motion.div>
             ))}
+          </div>
+          
+          <div className="text-center mt-10">
+            <Link to="/products">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                className="px-6 py-3 rounded-lg border border-[var(--primary)] text-white hover:bg-[var(--primary)]/10 transition-colors"
+              >
+                Voir tous nos produits
+              </motion.button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Services Section */}
+      <section className="py-20 bg-black/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 hero-gradient">
+              Nos Services
+            </h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Des solutions professionnelles pour répondre à tous vos besoins technologiques
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+            {featuredServices.map((service, index) => (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                viewport={{ once: true }}
+                className="glass-effect rounded-xl overflow-hidden"
+              >
+                <div className="relative h-48">
+                  <img
+                    src={service.image || 'https://via.placeholder.com/300'}
+                    alt={service.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="text-xl font-bold">{service.name}</h3>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <p className="text-gray-300 mb-4 line-clamp-2">{service.description}</p>
+                  <Link to="/quote-request">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      className="w-full px-4 py-2 rounded-lg bg-[var(--primary)] text-white neon-glow"
+                    >
+                      Demander un devis
+                    </motion.button>
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-10">
+            <Link to="/services">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                className="px-6 py-3 rounded-lg border border-[var(--primary)] text-white hover:bg-[var(--primary)]/10 transition-colors"
+              >
+                Voir tous nos services
+              </motion.button>
+            </Link>
           </div>
         </div>
       </section>
@@ -160,12 +253,14 @@ const Home = () => {
             <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
               Contactez-nous dès aujourd'hui pour discuter de vos besoins et découvrir comment nos solutions peuvent vous aider.
             </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="px-8 py-3 rounded-full bg-[var(--primary)] text-white neon-glow"
-            >
-              Demander un devis gratuit
-            </motion.button>
+            <Link to="/quote-request">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                className="px-8 py-3 rounded-full bg-[var(--primary)] text-white neon-glow"
+              >
+                Demander un devis gratuit
+              </motion.button>
+            </Link>
           </motion.div>
         </div>
       </section>

@@ -9,18 +9,11 @@ import {
   MessageSquareQuote,
   Calendar,
   PhoneCall,
-  FileText
+  FileText,
+  Loader
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-interface Service {
-  icon: JSX.Element;
-  title: string;
-  description: string;
-  advantages: string[];
-  details: string[];
-  image: string;
-}
+import { useServices } from '../contexts/ServiceContext';
 
 interface Testimonial {
   content: string;
@@ -29,77 +22,6 @@ interface Testimonial {
   company: string;
   image: string;
 }
-
-const services: Service[] = [
-  {
-    icon: <Wifi className="w-8 h-8" />,
-    title: 'Installation et Configuration de Réseaux Wi-Fi',
-    description: 'Installation de réseaux Wi-Fi à haut débit, en intérieur comme en extérieur, avec des points d\'accès optimisés pour une couverture totale.',
-    advantages: [
-      'Couverture Wi-Fi optimale',
-      'Installation rapide et professionnelle',
-      'Support technique dédié'
-    ],
-    details: [
-      'Configuration de routeurs',
-      'Installation de mesh Wi-Fi',
-      'Configuration de switchs PoE',
-      'Sécurisation du réseau'
-    ],
-    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8'
-  },
-  {
-    icon: <Shield className="w-8 h-8" />,
-    title: 'Vidéosurveillance et Sécurité',
-    description: 'Installation de systèmes de vidéosurveillance intelligents pour la sécurité de votre maison ou entreprise, avec des caméras haute définition et un stockage sécurisé.',
-    advantages: [
-      'Surveillance 24/7',
-      'Accès à distance via mobile',
-      'Stockage cloud sécurisé'
-    ],
-    details: [
-      'Installation de caméras IP',
-      'Configuration NVR',
-      'Systèmes d\'alarme',
-      'Intégration domotique'
-    ],
-    image: 'https://images.unsplash.com/photo-1557324232-b8917d3c3dcb'
-  },
-  {
-    icon: <Wrench className="w-8 h-8" />,
-    title: 'Maintenance Informatique et Réseaux',
-    description: 'Maintenance régulière de vos équipements informatiques et réseaux pour garantir une performance optimale et prévenir les pannes.',
-    advantages: [
-      'Maintenance préventive',
-      'Intervention rapide',
-      'Suivi personnalisé'
-    ],
-    details: [
-      'Dépannage matériel et logiciel',
-      'Gestion des réseaux',
-      'Mise à jour firmware',
-      'Diagnostic réseau'
-    ],
-    image: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780'
-  },
-  {
-    icon: <GraduationCap className="w-8 h-8" />,
-    title: 'Support Technique & Formation',
-    description: 'Support technique dédié et sessions de formation pour vos équipes afin d\'optimiser l\'utilisation de vos technologies.',
-    advantages: [
-      'Formation sur mesure',
-      'Support continu',
-      'Documentation détaillée'
-    ],
-    details: [
-      'Formation équipements IT',
-      'Gestion des réseaux',
-      'Bonnes pratiques sécurité',
-      'Utilisation des outils'
-    ],
-    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c'
-  }
-];
 
 const testimonials: Testimonial[] = [
   {
@@ -118,7 +40,7 @@ const testimonials: Testimonial[] = [
   }
 ];
 
-const ServiceCard = ({ service }: { service: Service }) => (
+const ServiceCard = ({ service }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -127,44 +49,61 @@ const ServiceCard = ({ service }: { service: Service }) => (
   >
     <div className="relative h-48">
       <img
-        src={service.image}
-        alt={service.title}
+        src={service.image || 'https://via.placeholder.com/300'}
+        alt={service.name}
         className="w-full h-full object-cover"
+        loading="lazy"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
       <div className="absolute bottom-4 left-4 text-white">
         <div className="p-2 rounded-lg bg-[var(--primary)]/20 backdrop-blur-sm inline-block mb-2">
-          {service.icon}
+          {service.category === 'Réseau' ? (
+            <Wifi className="w-8 h-8" />
+          ) : service.category === 'Sécurité' ? (
+            <Shield className="w-8 h-8" />
+          ) : service.category === 'Support' ? (
+            <Wrench className="w-8 h-8" />
+          ) : (
+            <GraduationCap className="w-8 h-8" />
+          )}
         </div>
-        <h3 className="text-xl font-bold">{service.title}</h3>
+        <h3 className="text-xl font-bold">{service.name}</h3>
       </div>
     </div>
     <div className="p-6">
       <p className="text-gray-300 mb-6">{service.description}</p>
       
       <div className="mb-6">
-        <h4 className="text-sm font-semibold text-[var(--primary)] mb-2">Avantages</h4>
-        <ul className="space-y-2">
-          {service.advantages.map((advantage, index) => (
-            <li key={index} className="flex items-center text-sm text-gray-300">
-              <ChevronRight className="w-4 h-4 text-[var(--primary)] mr-2" />
-              {advantage}
-            </li>
-          ))}
-        </ul>
+        <h4 className="text-sm font-semibold text-[var(--primary)] mb-2">Détails</h4>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-gray-300">Type de tarification:</span>
+          <span className="text-sm font-medium">
+            {service.pricing_type === 'fixed' ? 'Prix fixe' : 'Sur devis'}
+          </span>
+        </div>
+        {service.pricing_type === 'fixed' && service.price && (
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-sm text-gray-300">Prix:</span>
+            <span className="text-sm font-medium hero-gradient">{service.price} MAD</span>
+          </div>
+        )}
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-sm text-gray-300">Statut:</span>
+          <span className={`text-sm font-medium ${service.status === 'available' ? 'text-green-400' : 'text-red-400'}`}>
+            {service.status === 'available' ? 'Disponible' : 'Indisponible'}
+          </span>
+        </div>
       </div>
 
-      <div>
-        <h4 className="text-sm font-semibold text-[var(--primary)] mb-2">Détails techniques</h4>
-        <ul className="space-y-2">
-          {service.details.map((detail, index) => (
-            <li key={index} className="flex items-center text-sm text-gray-300">
-              <ChevronRight className="w-4 h-4 text-[var(--primary)] mr-2" />
-              {detail}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Link to="/quote-request" className="inline-block w-full">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          className="w-full px-4 py-2 rounded-lg bg-[var(--primary)] text-white neon-glow flex items-center justify-center"
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          Demander un devis
+        </motion.button>
+      </Link>
     </div>
   </motion.div>
 );
@@ -208,6 +147,8 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => (
 );
 
 const Services = () => {
+  const { services, loading, error } = useServices();
+
   return (
     <div className="pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -225,12 +166,35 @@ const Services = () => {
           </p>
         </motion.div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <Loader className="w-10 h-10 text-[var(--primary)] animate-spin" />
+            <span className="ml-4 text-lg">Chargement des services...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12 glass-effect rounded-xl p-8">
+            <p className="text-red-400 text-lg mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
+
         {/* Services Grid */}
-        <div className="grid md:grid-cols-2 gap-8 mb-20">
-          {services.map(service => (
-            <ServiceCard key={service.title} service={service} />
-          ))}
-        </div>
+        {!loading && !error && (
+          <div className="grid md:grid-cols-2 gap-8 mb-20">
+            {services.map(service => (
+              <ServiceCard key={service.id} service={service} />
+            ))}
+          </div>
+        )}
 
         {/* Process Section */}
         <motion.div
